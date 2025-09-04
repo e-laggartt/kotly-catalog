@@ -1,29 +1,312 @@
-<script>
-fetch('data.json')  // Исправьте путь! Уберите полный URL
-    .then(response => response.json())
-    .then(data => {
-        const container = document.getElementById('products');
-        // Очистим контейнер
-        container.innerHTML = '';
-        
-        data.forEach(product => {
-            const div = document.createElement('div');
-            div.className = 'product';
-            div.innerHTML = `
-                <h2>${product.Модель || 'Название не указано'}</h2>
-                <p>Артикул: ${product.Артикул || 'Не указан'}</p>
-                <p>Цена: ${product.Цена ? product.Цена + ' руб.' : 'Не указана'}</p>
-                <p class="${product.В_наличии > 0 ? 'available' : 'out-of-stock'}">
-                    ${product.В_наличии > 0 ? `В наличии: ${product.В_наличии} шт.` : 'Нет в наличии'}
-                </p>
-                <p>Статус: ${product.Статус || 'Неизвестно'}</p>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог котлов - Laggartt</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+        }
+        .product-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            height: 100%;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .available-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .out-of-stock-badge {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .search-box {
+            max-width: 400px;
+            margin: 0 auto 2rem;
+        }
+        .filters {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        .error-message {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .product-image {
+            height: 200px;
+            background: linear-gradient(45deg, #e3f2fd 0%, #bbdefb 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1976d2;
+            font-size: 3rem;
+        }
+        .stats {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="header text-center">
+            <div class="container">
+                <h1 class="display-4 fw-bold">🔥 Каталог котлов Laggartt</h1>
+                <p class="lead">Актуальные остатки и цены</p>
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        <div class="stats">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <h4 id="total-products">0</h4>
+                    <p class="text-muted">Всего товаров</p>
+                </div>
+                <div class="col-md-4">
+                    <h4 id="available-products">0</h4>
+                    <p class="text-muted">В наличии</p>
+                </div>
+                <div class="col-md-4">
+                    <h4 id="out-of-stock-products">0</h4>
+                    <p class="text-muted">Нет в наличии</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Поиск и фильтры -->
+        <div class="filters">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="search-box">
+                        <input type="text" id="search-input" class="form-control form-control-lg" 
+                               placeholder="🔍 Поиск по названию или артикулу...">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="available-only" checked>
+                        <label class="form-check-label" for="available-only">
+                            Только товары в наличии
+                        </label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="sort-by-price">
+                        <label class="form-check-label" for="sort-by-price">
+                            Сортировать по цене (по возрастанию)
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Контейнер для товаров -->
+        <div id="products-container">
+            <div class="loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="mt-3">Загружаем каталог товаров...</p>
+            </div>
+        </div>
+
+        <!-- Сообщение об ошибке -->
+        <div id="error-message" class="error-message" style="display: none;">
+            <h5>⚠️ Ошибка загрузки данных</h5>
+            <p>Не удалось загрузить каталог товаров. Пожалуйста, попробуйте позже.</p>
+            <button class="btn btn-warning btn-sm" onclick="loadProducts()">Попробовать снова</button>
+        </div>
+    </div>
+
+    <!-- Футер -->
+    <footer class="bg-dark text-white text-center py-4 mt-5">
+        <div class="container">
+            <p>© 2024 Laggartt. Каталог товаров обновляется автоматически.</p>
+            <p>Последнее обновление: <span id="last-update">-</span></p>
+        </div>
+    </footer>
+
+    <script>
+        // Глобальные переменные
+        let allProducts = [];
+        let filteredProducts = [];
+
+        // Загрузка данных
+        async function loadProducts() {
+            try {
+                showLoading();
+                
+                const response = await fetch('data.json');
+                if (!response.ok) {
+                    throw new Error(`Ошибка HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!Array.isArray(data)) {
+                    throw new Error('Данные не являются массивом');
+                }
+
+                allProducts = data;
+                updateStatistics();
+                filterProducts();
+                hideError();
+                
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                showError();
+            }
+        }
+
+        // Обновление статистики
+        function updateStatistics() {
+            const total = allProducts.length;
+            const available = allProducts.filter(p => p.В_наличии > 0).length;
+            const outOfStock = total - available;
+
+            document.getElementById('total-products').textContent = total;
+            document.getElementById('available-products').textContent = available;
+            document.getElementById('out-of-stock-products').textContent = outOfStock;
+            
+            // Обновляем время последнего обновления
+            document.getElementById('last-update').textContent = new Date().toLocaleString('ru-RU');
+        }
+
+        // Фильтрация и поиск
+        function filterProducts() {
+            const searchText = document.getElementById('search-input').value.toLowerCase();
+            const availableOnly = document.getElementById('available-only').checked;
+            const sortByPrice = document.getElementById('sort-by-price').checked;
+
+            filteredProducts = allProducts.filter(product => {
+                const matchesSearch = product.Модель?.toLowerCase().includes(searchText) || 
+                                    product.Артикул?.toLowerCase().includes(searchText);
+                const matchesAvailability = !availableOnly || product.В_наличии > 0;
+                return matchesSearch && matchesAvailability;
+            });
+
+            if (sortByPrice) {
+                filteredProducts.sort((a, b) => (a.Цена || 0) - (b.Цена || 0));
+            }
+
+            displayProducts();
+        }
+
+        // Отображение товаров
+        function displayProducts() {
+            const container = document.getElementById('products-container');
+            
+            if (filteredProducts.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <h4>😔 Товары не найдены</h4>
+                        <p class="text-muted">Попробуйте изменить параметры поиска или фильтры</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredProducts.map(product => `
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card product-card h-100">
+                        <div class="product-image">
+                            🔥
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">${product.Модель || 'Без названия'}</h5>
+                            <p class="text-muted">Артикул: ${product.Артикул || 'Не указан'}</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="price">${product.Цена ? product.Цена.toLocaleString('ru-RU') + ' ₽' : 'Цена не указана'}</span>
+                                <span class="${product.В_наличии > 0 ? 'available-badge' : 'out-of-stock-badge'}">
+                                    ${product.В_наличии > 0 ? `В наличии: ${product.В_наличии} шт.` : 'Нет в наличии'}
+                                </span>
+                            </div>
+                            ${product.Статус ? `<p class="text-muted small">Статус: ${product.Статус}</p>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Обновляем сетку
+            container.innerHTML = `<div class="row">${container.innerHTML}</div>`;
+        }
+
+        // Вспомогательные функции
+        function showLoading() {
+            document.getElementById('products-container').innerHTML = `
+                <div class="loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <p class="mt-3">Загружаем каталог товаров...</p>
+                </div>
             `;
-            container.appendChild(div);
-        });
-    })
-    .catch(error => {
-        console.error('Ошибка загрузки данных:', error);
-        document.getElementById('products').innerHTML = 
-            '<p style="color: red;">Ошибка загрузки данных. Проверьте консоль.</p>';
-    });
-</script>
+        }
+
+        function showError() {
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('products-container').innerHTML = '';
+        }
+
+        function hideError() {
+            document.getElementById('error-message').style.display = 'none';
+        }
+
+        // Обработчики событий
+        document.getElementById('search-input').addEventListener('input', filterProducts);
+        document.getElementById('available-only').addEventListener('change', filterProducts);
+        document.getElementById('sort-by-price').addEventListener('change', filterProducts);
+
+        // Запуск при загрузке страницы
+        document.addEventListener('DOMContentLoaded', loadProducts);
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
