@@ -2,8 +2,8 @@ name: Update Product Data
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Каждый час
-  workflow_dispatch:     # Ручной запуск
+    - cron: '0 * * * *'
+  workflow_dispatch:
   push:
     branches: [ main ]
 
@@ -30,12 +30,15 @@ jobs:
           pip install pandas openpyxl xlrd
 
       - name: Run processing script
-        run: python scripts/process_data.py
+        run: |
+          echo "Проверяем наличие файлов:"
+          ls -la data/
+          python scripts/process_data.py
 
-      - name: Commit and push if data changed
+      - name: Commit and push changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add data.json
-          git add Сводная_таблица_котлы_*.xlsx
+          git status
           git diff --staged --quiet || (git commit -m "Auto-update data [skip ci]" && git push)
