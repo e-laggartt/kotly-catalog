@@ -7,8 +7,8 @@ def main():
         print("Начинаем обработку данных...")
 
         # === Загрузка данных ===
-        price_df = pd.read_excel('Прайс.xlsx', sheet_name='Прайс-лист')
-        stock_df = pd.read_excel('наличие котлы.xlsx', sheet_name='Лист_1')
+        price_df = pd.read_excel('data/Прайс.xlsx', sheet_name='Прайс-лист')
+        stock_df = pd.read_excel('data/наличие котлы.xlsx', sheet_name='Лист_1')
 
         # === Обработка прайс-листа ===
         print("Обрабатываем прайс-лист...")
