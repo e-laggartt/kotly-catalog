@@ -107,7 +107,7 @@
             font-size: 0.95rem;
             line-height: 1.4;
             margin-bottom: 10px;
-            height: 40px;
+            height: 36px; /* Уменьшено с 40px */
             overflow: hidden;
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -333,18 +333,9 @@
         .filter-accordion-button .bi {
             transition: transform 0.3s ease;
         }
-        .filter-accordion-button.collapsed .bi {
-            transform: rotate(180deg);
-        }
         .filter-accordion-body {
             overflow: hidden;
             transition: max-height 0.3s ease-out, opacity 0.3s ease;
-            max-height: 500px;
-            opacity: 1;
-        }
-        .filter-accordion-body.collapsed {
-            max-height: 0;
-            opacity: 0;
         }
 
         /* Адаптивность */
@@ -364,7 +355,7 @@
             
             .card-title {
                 font-size: 0.9rem;
-                height: 36px;
+                height: 32px; /* Уменьшено с 36px */
             }
             
             .stat-card {
@@ -391,17 +382,8 @@
                 max-height: 500px;
                 opacity: 1;
             }
-            .filter-accordion-button .bi-chevron-down {
-                display: inline-block;
-            }
             .filter-accordion-button .bi-chevron-up {
-                display: none;
-            }
-            .filter-accordion-button.collapsed .bi-chevron-down {
-                display: none;
-            }
-            .filter-accordion-button.collapsed .bi-chevron-up {
-                display: inline-block;
+                transform: rotate(180deg);
             }
         }
         /* На десктопах аккордеон всегда развернут */
@@ -536,7 +518,7 @@
             <h5 class="mb-3 text-primary d-none d-md-block"><i class="bi bi-funnel"></i> Фильтры</h5>
             
             <!-- Тело аккордеона -->
-            <div class="filter-accordion-body collapsed" id="filter-accordion-body">
+            <div class="filter-accordion-body" id="filter-accordion-body">
                 <div class="row g-3">
                     <div class="col-12 col-md-3">
                         <select class="form-select" id="power-filter">
@@ -696,9 +678,7 @@
         // Новая функция для переключения видимости фильтров
         function toggleFilters() {
             const accordionBody = document.getElementById('filter-accordion-body');
-            const accordionButton = document.getElementById('filter-accordion-button');
-            accordionBody.classList.toggle('collapsed');
-            accordionButton.classList.toggle('collapsed');
+            accordionBody.classList.toggle('show');
         }
 
         async function loadData() {
@@ -991,7 +971,7 @@
                             <div class="quantity-control">
                                 <button class="quantity-btn" onclick="updateCartItem('${item.Артикул}', ${item.quantity - 1})">-</button>
                                 <input type="number" class="quantity-input" value="${item.quantity}" 
-                                       onchange="updateCartItem('${item.Артикул}', this.value)">>
+                                       onchange="updateCartItem('${item.Артикул}', this.value)">
                                 <button class="quantity-btn" onclick="updateCartItem('${item.Артикул}', ${item.quantity + 1})">+</button>
                             </div>
                         </div>
