@@ -1,98 +1,46 @@
-name: Update Product Data
+name: Update Data from Google Sheets
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Каждый час в начале часа
-  workflow_dispatch:     # Ручной запуск из интерфейса
-  push:
-    branches: [ main ]
+    - cron: '0 */6 * * *'  # Запускать каждые 6 часов
+  workflow_dispatch:        # Разрешить ручной запуск
 
 jobs:
   update-data:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
-      # Шаг 1: Получаем код репозитория
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Важно: получать всю историю коммитов
 
-      # Шаг 2: Устанавливаем Python
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
 
-      # Шаг 3: Устанавливаем зависимости с совместимыми версиями
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pandas==1.5.3 numpy==1.24.3
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-      # Шаг 4: Проверяем установленные версии
-      - name: Check versions
-        run: |
-          python -c "import pandas; print('pandas version:', pandas.__version__)"
-          python -c "import numpy; print('numpy version:', numpy.__version__)"
+    - name: Pull latest changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git pull origin main --rebase  # Важно: сначала получаем свежие изменения
 
-      # Шаг 5: Запускаем скрипт обработки данных
-      - name: Run processing script
-        run: |
-          echo "Запускаем скрипт обработки данных из Google Таблиц..."
-          python process_data.py
+    - name: Run data processing script
+      run: python process_data.py
 
-      # Шаг 6: Проверяем созданные файлы
-      - name: Verify generated files
-        run: |
-          echo "Проверяем созданные файлы:"
-          ls -la *.json 2>/dev/null || echo "JSON файлы не найдены"
-          
-          if [ -f "data.json" ]; then
-            echo "✅ data.json создан успешно"
-            record_count=$(grep -c '"Артикул"' data.json || echo "0")
-            available_count=$(grep -c '"В_наличии": [1-9][0-9]*' data.json || echo "0")
-            echo "Количество записей: $record_count"
-            echo "Товаров в наличии: $available_count"
-          else
-            echo "❌ data.json не создан!"
-            exit 1
-          fi
-
-      # Шаг 7: Коммитим и пушим изменения
-      - name: Commit and push changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          
-          git add data.json
-          
-          if ! git diff --staged --quiet; then
-            git commit -m "Auto-update: данные обновлены из Google Таблиц [skip ci]"
-            git push
-            echo "✅ Изменения успешно запушены в репозиторий"
-          else
-            echo "ℹ️ Изменений нет, пропускаем коммит"
-          fi
-
-      # Шаг 8: Финальная проверка
-      - name: Final check
-        run: |
-          echo "=== ФИНАЛЬНАЯ ПРОВЕРКА ==="
-          echo "Время завершения: $(date)"
-          
-          if [ -f "data.json" ]; then
-            record_count=$(grep -c '"Артикул"' data.json || echo "0")
-            available_count=$(grep -c '"В_наличии": [1-9][0-9]*' data.json || echo "0")
-            
-            echo "Статус: ✅ Workflow выполнен успешно"
-            echo "Обработано записей: $record_count"
-            echo "Товаров в наличии: $available_count"
-          else
-            echo "Статус: ❌ Workflow завершен с ошибкой"
-            exit 1
-          fi
-          
-          echo "================================="
+    - name: Commit and push if changed
+      run: |
+        git add data.json
+        if ! git diff --staged --quiet; then
+          git commit -m "Auto-update: данные обновлены из Google Таблиц [skip ci]"
+          git pull origin main --rebase  # Еще раз обновляем перед отправкой
+          git push origin main
+        else
+          echo "No changes to commit"
+        fi
