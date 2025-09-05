@@ -2,8 +2,8 @@ name: Update Product Data
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Каждый час
-  workflow_dispatch:     # Ручной запуск
+    - cron: '0 * * * *'  # Каждый час в начале часа
+  workflow_dispatch:     # Ручной запуск из интерфейса
   push:
     branches: [ main ]
 
@@ -14,72 +14,99 @@ jobs:
       contents: write
 
     steps:
+      # Шаг 1: Получаем код репозитория
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # Шаг 2: Устанавливаем Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
+      # Шаг 3: Устанавливаем зависимости
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pandas openpyxl xlrd requests lxml beautifulsoup4 html5lib
+          pip install pandas requests
 
-      - name: Debug - Check network connectivity
-        run: |
-          echo "Проверяем доступность внешних ресурсов..."
-          ping -c 3 b24.engpx.ru || echo "Ping тест не прошел"
-          curl -I "https://b24.engpx.ru/~1PZm1" || echo "Прайс недоступен"
-          curl -I "https://b24.engpx.ru/~8G8gh" || echo "Наличие недоступно"
-
+      # Шаг 4: Запускаем скрипт обработки данных
       - name: Run processing script
         run: |
-          echo "Запускаем скрипт обработки..."
+          echo "Запускаем скрипт обработки данных из Google Таблиц..."
           python scripts/process_data.py
 
+      # Шаг 5: Проверяем созданные файлы
       - name: Verify generated files
         run: |
           echo "Проверяем созданные файлы:"
           ls -la *.json *.xlsx 2>/dev/null || echo "Файлы не найдены"
           
+          # Проверяем data.json
           if [ -f "data.json" ]; then
-            echo "data.json существует, проверяем содержимое:"
-            head -n 5 data.json
-            echo "..."
-            tail -n 2 data.json
+            echo "✅ data.json создан успешно"
+            echo "Размер файла: $(wc -l < data.json) строк"
+            echo "Первые 3 записи:"
+            head -n 10 data.json | grep -E '("Артикул|"Модель|"Цена)' || head -n 5 data.json
           else
             echo "❌ data.json не создан!"
             exit 1
           fi
+          
+          # Проверяем Excel файлы
+          if ls Сводная_таблица_котлы_*.xlsx 1> /dev/null 2>&1; then
+            echo "✅ Excel файл создан успешно"
+          else
+            echo "⚠️ Excel файл не создан (не критично)"
+          fi
 
+      # Шаг 6: Коммитим и пушим изменения
       - name: Commit and push changes
         run: |
+          # Настраиваем git
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
           # Добавляем только нужные файлы
           git add data.json
-          git add Сводная_таблица_котлы_*.xlsx 2>/dev/null || echo "Excel файлы не найдены"
           
-          # Проверяем изменения
+          # Пытаемся добавить Excel файлы (если есть)
+          if ls Сводная_таблица_котлы_*.xlsx 1> /dev/null 2>&1; then
+            git add Сводная_таблица_котлы_*.xlsx
+          fi
+          
+          # Проверяем статус
+          echo "Текущий статус git:"
           git status
           
           # Коммитим и пушим если есть изменения
           if ! git diff --staged --quiet; then
-            git commit -m "Auto-update: данные обновлены из внешних источников [skip ci]"
+            git commit -m "Auto-update: данные обновлены из Google Таблиц [skip ci]"
             git push
-            echo "✅ Изменения запушены"
+            echo "✅ Изменения успешно запушены в репозиторий"
           else
             echo "ℹ️ Изменений нет, пропускаем коммит"
           fi
 
-      - name: Cleanup old files
+      # Шаг 7: Очищаем старые файлы (опционально)
+      - name: Cleanup old Excel files
         run: |
-          # Удаляем старые Excel файлы (оставляем только последние 5)
-          ls -t Сводная_таблица_котлы_*.xlsx 2>/dev/null | tail -n +6 | xargs rm -f 2>/dev/null || echo "Нет файлов для очистки"
-          echo "Оставшиеся файлы:"
-          ls -la *.xlsx 2>/dev/null || echo "Excel файлов нет"
+          # Удаляем старые Excel файлы (оставляем только последние 3)
+          if ls Сводная_таблица_котлы_*.xlsx 1> /dev/null 2>&1; then
+            echo "Очищаем старые Excel файлы..."
+            ls -t Сводная_таблица_котлы_*.xlsx | tail -n +4 | xargs rm -f 2>/dev/null || true
+            echo "Оставшиеся файлы:"
+            ls -la Сводная_таблица_котлы_*.xlsx 2>/dev/null || echo "Excel файлов нет"
+          else
+            echo "Нет Excel файлов для очистки"
+          fi
+
+      # Шаг 8: Финальная проверка
+      - name: Final check
+        run: |
+          echo "=== ФИНАЛЬНАЯ ПРОВЕРКА ==="
+          echo "Время завершения: $(date)"
+          echo "Статус: ✅ Workflow выполнен успешно"
+          echo "Данные обновлены и доступны на сайте"
