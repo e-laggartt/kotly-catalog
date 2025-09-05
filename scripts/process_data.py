@@ -5,6 +5,7 @@ import json
 import os
 import requests
 from io import BytesIO
+import tempfile
 
 def main():
     try:
@@ -21,28 +22,99 @@ def main():
         print("Загружаем прайс-лист...")
         price_response = requests.get(PRICE_URL)
         price_response.raise_for_status()  # Проверка ошибок
-        price_file = BytesIO(price_response.content)
         
         # Загрузка остатков
         print("Загружаем данные остатков...")
         stock_response = requests.get(STOCK_URL)
         stock_response.raise_for_status()  # Проверка ошибок
-        stock_file = BytesIO(stock_response.content)
         
-        # ===== ОБРАБОТКА ДАННЫХ =====
+        # ===== АНАЛИЗ ФОРМАТА ФАЙЛОВ =====
+        print("Анализируем форматы файлов...")
+        
+        # Сохраняем файлы временно для анализа
+        with tempfile.NamedTemporaryFile(delete=False, suffix='_price') as temp_price:
+            temp_price.write(price_response.content)
+            temp_price_path = temp_price.name
+            
+        with tempfile.NamedTemporaryFile(delete=False, suffix='_stock') as temp_stock:
+            temp_stock.write(stock_response.content)
+            temp_stock_path = temp_stock.name
+        
+        # Определяем тип файлов по содержимому
+        def detect_file_type(content):
+            if content.startswith(b'PK'):  # ZIP signature (Excel)
+                return 'excel'
+            elif b'<html' in content.lower() or b'<!DOCTYPE' in content.lower():
+                return 'html'
+            elif b'<?xml' in content.lower():
+                return 'xml'
+            else:
+                return 'unknown'
+        
+        price_type = detect_file_type(price_response.content[:100])
+        stock_type = detect_file_type(stock_response.content[:100])
+        
+        print(f"Тип прайс-файла: {price_type}")
+        print(f"Тип файла остатков: {stock_type}")
+        
+        # ===== ОБРАБОТКА РАЗНЫХ ФОРМАТОВ =====
         print("Обрабатываем данные...")
         
-        # Чтение Excel файлов с явным указанием движка
-        price_df = pd.read_excel(price_file, sheet_name='Прайс-лист', engine='openpyxl')
-        stock_df = pd.read_excel(stock_file, sheet_name='Лист_1', engine='openpyxl')
-
+        if price_type == 'excel':
+            # Это Excel файл
+            price_df = pd.read_excel(temp_price_path, sheet_name='Прайс-лист', engine='openpyxl')
+        else:
+            # Пытаемся прочитать как HTML таблицу
+            print("Пытаемся прочитать прайс как HTML таблицу...")
+            try:
+                price_df = pd.read_html(price_response.content)[0]  # Берем первую таблицу
+            except Exception as e:
+                print(f"Не удалось прочитать как HTML: {e}")
+                # Показываем что содержится в файле для отладки
+                print("Начало содержимого прайса:")
+                print(price_response.content[:500])
+                raise ValueError("Неизвестный формат прайс-файла")
+        
+        if stock_type == 'excel':
+            # Это Excel файл
+            stock_df = pd.read_excel(temp_stock_path, sheet_name='Лист_1', engine='openpyxl')
+        else:
+            # Пытаемся прочитать как HTML таблицу
+            print("Пытаемся прочитать остатки как HTML таблицу...")
+            try:
+                stock_df = pd.read_html(stock_response.content)[0]  # Берем первую таблицу
+            except Exception as e:
+                print(f"Не удалось прочитать как HTML: {e}")
+                # Показываем что содержится в файле для отладки
+                print("Начало содержимого остатков:")
+                print(stock_response.content[:500])
+                raise ValueError("Неизвестный формат файла остатков")
+        
+        # Удаляем временные файлы
+        os.unlink(temp_price_path)
+        os.unlink(temp_stock_path)
+        
         # ===== ОБРАБОТКА ПРАЙС-ЛИСТА =====
         print("Обрабатываем прайс-лист...")
-        price_df = price_df[['Артикул', 'Товар', 'Розничная']].copy()
+        
+        # Автоматически находим нужные колонки
+        def find_column(df, possible_names):
+            for col in df.columns:
+                if any(name.lower() in str(col).lower() for name in possible_names):
+                    return col
+            return df.columns[1]  # Первая колонка после индекса
+        
+        # Находим колонки
+        article_col = find_column(price_df, ['артикул', 'article', 'код'])
+        name_col = find_column(price_df, ['товар', 'наименование', 'модель', 'name', 'product'])
+        price_col = find_column(price_df, ['розничная', 'цена', 'price', 'retail'])
+        
+        print(f"Найдены колонки: Артикул={article_col}, Товар={name_col}, Цена={price_col}")
+        
+        price_df = price_df[[article_col, name_col, price_col]].copy()
         price_df.columns = ['Артикул', 'Модель', 'Цена']
         
         # Очистка данных
-        price_df = price_df.iloc[1:].reset_index(drop=True)
         price_df = price_df.dropna(subset=['Артикул'])
         price_df['Артикул'] = price_df['Артикул'].astype(str).str.strip()
         price_df = price_df.drop_duplicates('Артикул')
@@ -52,12 +124,18 @@ def main():
 
         # ===== ОБРАБОТКА ОСТАТКОВ =====
         print("Обрабатываем остатки...")
-        # Фильтруем только строки с артикулами
-        stock_df = stock_df[stock_df.iloc[:, 0].astype(str).str.contains(r'^\d', na=False)]
-        stock_df['Артикул'] = stock_df.iloc[:, 0].astype(str).str.strip()
         
-        # Берем колонку H (индекс 7) - "В наличии"
-        stock_df = stock_df.rename(columns={stock_df.columns[7]: 'В_наличии'})
+        # Находим колонку с артикулом
+        stock_article_col = find_column(stock_df, ['артикул', 'article', 'код'])
+        stock_qty_col = find_column(stock_df, ['в наличии', 'остаток', 'количество', 'quantity', 'stock'])
+        
+        print(f"Найдены колонки: Артикул={stock_article_col}, Наличие={stock_qty_col}")
+        
+        # Фильтруем только строки с артикулами
+        stock_df = stock_df[stock_df[stock_article_col].astype(str).str.contains(r'^\d', na=False)]
+        stock_df['Артикул'] = stock_df[stock_article_col].astype(str).str.strip()
+        
+        stock_df = stock_df.rename(columns={stock_qty_col: 'В_наличии'})
         stock_df = stock_df[['Артикул', 'В_наличии']]
         
         # Очистка и обработка отрицательных значений
@@ -122,7 +200,7 @@ def main():
         # Выводим пример данных для проверки
         print("\nПример обработанных данных (первые 3 записи):")
         for i, item in enumerate(data_for_json[:3]):
-            print(f"{i+1}. {item['Модель']} - {item['Цена']} руб. - {item['В_наличии']} шт.")
+            print(f"{i+1}. {item.get('Модель', 'Нет названия')} - {item.get('Цена', 0)} руб. - {item.get('В_наличии', 0)} шт.")
             
     except requests.exceptions.RequestException as e:
         print(f"❌ Ошибка загрузки файлов: {e}")
@@ -136,6 +214,8 @@ def main():
     except Exception as e:
         print(f"❌ Неожиданная ошибка: {str(e)}")
         print("Тип ошибки:", type(e).__name__)
+        import traceback
+        traceback.print_exc()
         raise
 
 if __name__ == "__main__":
