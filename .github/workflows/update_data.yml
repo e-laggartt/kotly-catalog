@@ -2,8 +2,8 @@ name: Update Product Data
 
 on:
   schedule:
-    - cron: '0 * * * *'
-  workflow_dispatch:
+    - cron: '0 * * * *'  # Каждый час
+  workflow_dispatch:     # Ручной запуск
   push:
     branches: [ main ]
 
@@ -27,12 +27,21 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pandas openpyxl xlrd
+          pip install pandas openpyxl xlrd requests  # ← ВАЖНО: добавлен requests
+
+      - name: Debug - Check files
+        run: |
+          echo "Текущая директория:"
+          pwd
+          echo "Содержимое папки data:"
+          ls -la data/
+          echo "Проверяем доступность внешних URL:"
+          curl -I "https://b24.engpx.ru/~1PZm1" || echo "Прайс недоступен"
+          curl -I "https://b24.engpx.ru/~8G8gh" || echo "Наличие недоступно"
 
       - name: Run processing script
         run: |
-          echo "Проверяем наличие файлов:"
-          ls -la data/
+          echo "Запускаем скрипт обработки..."
           python scripts/process_data.py
 
       - name: Commit and push changes
@@ -40,5 +49,6 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add data.json
+          git add Сводная_таблица_котлы_*.xlsx
           git status
-          git diff --staged --quiet || (git commit -m "Auto-update data [skip ci]" && git push)
+          git diff --staged --quiet || (git commit -m "Auto-update data from external sources [skip ci]" && git push)
