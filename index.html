@@ -7,43 +7,90 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <style>
-        .card { transition: transform 0.2s; height: 100%; }
-        .card:hover { transform: translateY(-5px); }
-        .in-stock { color: #198754; }
+        .card { transition: transform 0.2s; height: 100%; margin-bottom: 20px; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .in-stock { color: #198754; font-weight: bold; }
         .out-of-stock { color: #dc3545; }
-        .original-price { text-decoration: line-through; color: #6c757d; }
-        .discount-price { font-weight: bold; color: #dc3545; }
-        .discount-section { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
-        .product-img { height: 180px; object-fit: contain; background: #f8f9fa; padding: 10px; }
+        .original-price { text-decoration: line-through; color: #6c757d; font-size: 0.9em; }
+        .discount-price { font-weight: bold; color: #dc3545; font-size: 1.2em; }
+        .discount-section { background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 20px; border-radius: 15px; margin-bottom: 25px; border: 1px solid #dee2e6; }
+        .product-img { 
+            height: 220px; 
+            object-fit: contain; 
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .badge { margin-right: 4px; margin-bottom: 6px; font-size: 0.75em; }
+        .price-section { background: #f8f9fa; padding: 10px; border-radius: 8px; margin: 10px 0; }
+        .filter-section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px; padding: 20px; text-align: center; margin-bottom: 20px; }
+        .search-box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 25px; }
     </style>
 </head>
 <body>
     <div class="container py-4">
-        <header class="text-center mb-4">
-            <h1 class="display-5 fw-bold text-primary">Каталог газовых котлов</h1>
-            <p class="text-muted">Актуальные цены и наличие</p>
+        <header class="text-center mb-5">
+            <h1 class="display-4 fw-bold text-primary mb-3">Каталог газовых котлов</h1>
+            <p class="lead text-muted">Актуальные цены и наличие в реальном времени</p>
         </header>
+
+        <!-- Статистика -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="stat-card">
+                    <h4 id="total-products">0</h4>
+                    <p class="mb-0">Всего товаров</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <h4 id="available-products">0</h4>
+                    <p class="mb-0">В наличии</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);">
+                    <h4 id="out-of-stock">0</h4>
+                    <p class="mb-0">Нет в наличии</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card" style="background: linear-gradient(135deg, #fd7e14 0%, #fdb345 100%);">
+                    <h4 id="total-price">0</h4>
+                    <p class="mb-0">Общая стоимость</p>
+                </div>
+            </div>
+        </div>
 
         <!-- Секция скидок -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="discount-section">
+                    <h5 class="mb-3"><i class="bi bi-tag"></i> Расчет скидки</h5>
                     <div class="row align-items-center">
-                        <div class="col-md-3">
-                            <label class="form-label">Скидка %</label>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Размер скидки: <span id="discount-value">0</span>%</label>
                             <input type="range" class="form-range" id="discount-slider" min="0" max="50" value="0" 
                                    oninput="updateDiscount(this.value)">
                         </div>
                         <div class="col-md-2">
+                            <label class="form-label fw-bold">Или введите %:</label>
                             <input type="number" class="form-control" id="discount-input" min="0" max="50" value="0"
                                    oninput="updateDiscount(this.value)" placeholder="0">
                         </div>
-                        <div class="col-md-7">
+                        <div class="col-md-6">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="show-original" 
                                        onchange="toggleOriginalPrices()">
                                 <label class="form-check-label" for="show-original">
                                     Показывать оригинальные цены
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="auto-apply" checked>
+                                <label class="form-check-label" for="auto-apply">
+                                    Автоматически применять скидку
                                 </label>
                             </div>
                         </div>
@@ -55,47 +102,71 @@
         <!-- Фильтры -->
         <div class="row mb-4">
             <div class="col-12">
-                <div class="row g-2">
-                    <div class="col-md-3">
-                        <input type="text" class="form-control" id="search-input" placeholder="Поиск...">
+                <div class="filter-section">
+                    <h5 class="mb-3"><i class="bi bi-funnel"></i> Фильтры</h5>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" id="search-input" placeholder="Поиск по названию или артикулу...">
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="power-filter">
+                                <option value="">Все мощности</option>
+                                <option value="18">18 кВт</option>
+                                <option value="24">24 кВт</option>
+                                <option value="28">28 кВт</option>
+                                <option value="30">30 кВт</option>
+                                <option value="32">32 кВт</option>
+                                <option value="36">36 кВт</option>
+                                <option value="45">45 кВт</option>
+                                <option value="60">60 кВт</option>
+                                <option value="80">80 кВт</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="contour-filter">
+                                <option value="">Все контуры</option>
+                                <option value="Двухконтурный">Двухконтурные</option>
+                                <option value="Одноконтурный">Одноконтурные</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="wifi-filter">
+                                <option value="">Wi-Fi</option>
+                                <option value="Да">С Wi-Fi</option>
+                                <option value="Нет">Без Wi-Fi</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="stock-filter">
+                                <option value="">Все</option>
+                                <option value="available">В наличии</option>
+                                <option value="outofstock">Нет в наличии</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <button class="btn btn-primary w-100 h-100" onclick="filterProducts()" title="Применить фильтры">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        <select class="form-select" id="power-filter">
-                            <option value="">Мощность</option>
-                            <option value="18">18 кВт</option>
-                            <option value="24">24 кВт</option>
-                            <option value="28">28 кВт</option>
-                            <option value="30">30 кВт</option>
-                            <option value="32">32 кВт</option>
-                            <option value="36">36 кВт</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <select class="form-select" id="contour-filter">
-                            <option value="">Контуры</option>
-                            <option value="Двухконтурный">Двухконтурные</option>
-                            <option value="Одноконтурный">Одноконтурные</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <select class="form-select" id="wifi-filter">
-                            <option value="">Wi-Fi</option>
-                            <option value="Да">С Wi-Fi</option>
-                            <option value="Нет">Без Wi-Fi</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <select class="form-select" id="stock-filter">
-                            <option value="">Наличие</option>
-                            <option value="available">В наличии</option>
-                            <option value="outofstock">Нет в наличии</option>
-                        </select>
-                    </div>
-                    <div class="col-md-1">
-                        <button class="btn btn-primary w-100" onclick="filterProducts()">
-                            <i class="bi bi-filter"></i>
-                        </button>
-                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Сортировка -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span id="product-count" class="text-muted">Загрузка...</span>
+                    <select class="form-select w-auto" id="sort-select" onchange="sortProducts()">
+                        <option value="name-asc">По названию (А-Я)</option>
+                        <option value="name-desc">По названию (Я-А)</option>
+                        <option value="price-asc">По цене (возрастание)</option>
+                        <option value="price-desc">По цене (убывание)</option>
+                        <option value="stock-desc">По наличию (сначала в наличии)</option>
+                        <option value="power-asc">По мощности (возрастание)</option>
+                        <option value="power-desc">По мощности (убывание)</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -104,11 +175,26 @@
         <div id="products-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"></div>
 
         <!-- Пагинация -->
-        <nav class="mt-4">
+        <nav class="mt-5" id="pagination-container">
             <ul class="pagination justify-content-center" id="pagination"></ul>
         </nav>
+
+        <!-- Информация об обновлении -->
+        <footer class="text-center mt-5 pt-4 border-top">
+            <p class="text-muted">
+                <i class="bi bi-arrow-repeat"></i> Данные обновляются автоматически каждый час. 
+                Последнее обновление: <span id="last-update">-</span>
+            </p>
+            <p class="text-muted">
+                <i class="bi bi-lightning-charge"></i> Для принудительного обновления нажмите 
+                <button class="btn btn-sm btn-outline-primary ms-2" onclick="loadData()">
+                    <i class="bi bi-arrow-clockwise"></i> Обновить
+                </button>
+            </p>
+        </footer>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let allProducts = [];
         let filteredProducts = [];
@@ -120,12 +206,56 @@
         // Загрузка данных
         async function loadData() {
             try {
+                showLoading(true);
                 const response = await fetch('data.json');
                 allProducts = await response.json();
+                
+                // Обновляем время последнего обновления
+                document.getElementById('last-update').textContent = new Date().toLocaleString('ru-RU');
+                
+                updateStatistics();
                 filterProducts();
+                showLoading(false);
             } catch (error) {
-                console.error('Ошибка загрузки:', error);
+                console.error('Ошибка загрузки данных:', error);
+                showLoading(false);
+                document.getElementById('products-container').innerHTML = `
+                    <div class="col-12 text-center">
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i> Не удалось загрузить данные. Пожалуйста, попробуйте позже.
+                        </div>
+                    </div>
+                `;
             }
+        }
+
+        // Показать/скрыть загрузку
+        function showLoading(show) {
+            if (show) {
+                document.getElementById('products-container').innerHTML = `
+                    <div class="col-12 text-center">
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Загрузка...</span>
+                            </div>
+                        </div>
+                        <p class="mt-2 text-muted">Загрузка данных...</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Обновление статистики
+        function updateStatistics() {
+            const total = allProducts.length;
+            const available = allProducts.filter(p => p.В_наличии > 0).length;
+            const outOfStock = total - available;
+            const totalPrice = allProducts.reduce((sum, p) => sum + p.Цена, 0);
+            
+            document.getElementById('total-products').textContent = total;
+            document.getElementById('available-products').textContent = available;
+            document.getElementById('out-of-stock').textContent = outOfStock;
+            document.getElementById('total-price').textContent = Math.round(totalPrice).toLocaleString('ru-RU') + ' руб.';
         }
 
         // Расчет цены со скидкой
@@ -138,8 +268,12 @@
             value = Math.max(0, Math.min(50, parseInt(value) || 0));
             document.getElementById('discount-slider').value = value;
             document.getElementById('discount-input').value = value;
+            document.getElementById('discount-value').textContent = value;
             currentDiscount = value;
-            renderProducts();
+            
+            if (document.getElementById('auto-apply').checked) {
+                renderProducts();
+            }
         }
 
         // Переключение показа оригинальных цен
@@ -148,67 +282,117 @@
             renderProducts();
         }
 
-        // Фильтрация
+        // Фильтрация товаров
         function filterProducts() {
-            const search = document.getElementById('search-input').value.toLowerCase();
-            const power = document.getElementById('power-filter').value;
-            const contour = document.getElementById('contour-filter').value;
-            const wifi = document.getElementById('wifi-filter').value;
-            const stock = document.getElementById('stock-filter').value;
+            const searchText = document.getElementById('search-input').value.toLowerCase();
+            const powerFilter = document.getElementById('power-filter').value;
+            const contourFilter = document.getElementById('contour-filter').value;
+            const wifiFilter = document.getElementById('wifi-filter').value;
+            const stockFilter = document.getElementById('stock-filter').value;
             
             filteredProducts = allProducts.filter(product => {
-                return (
-                    product.Модель.toLowerCase().includes(search) &&
-                    (!power || product.Мощность == power) &&
-                    (!contour || product.Контуры === contour) &&
-                    (!wifi || product.WiFi === wifi) &&
-                    (!stock || (stock === 'available' && product.В_наличии > 0) || (stock === 'outofstock' && product.В_наличии === 0))
-                );
+                const matchesSearch = product.Модель.toLowerCase().includes(searchText) || 
+                                    product.Артикул.toLowerCase().includes(searchText);
+                const matchesPower = !powerFilter || product.Мощность === powerFilter;
+                const matchesContour = !contourFilter || product.Контуры === contourFilter;
+                const matchesWifi = !wifiFilter || product.WiFi === wifiFilter;
+                const matchesStock = !stockFilter || 
+                    (stockFilter === 'available' && product.В_наличии > 0) ||
+                    (stockFilter === 'outofstock' && product.В_наличии === 0);
+                
+                return matchesSearch && matchesPower && matchesContour && matchesWifi && matchesStock;
             });
             
+            document.getElementById('product-count').textContent = `Найдено ${filteredProducts.length} товаров`;
             currentPage = 1;
+            sortProducts();
+        }
+
+        // Сортировка товаров
+        function sortProducts() {
+            const sortOption = document.getElementById('sort-select').value;
+            
+            filteredProducts.sort((a, b) => {
+                switch (sortOption) {
+                    case 'name-asc':
+                        return a.Модель.localeCompare(b.Модель);
+                    case 'name-desc':
+                        return b.Модель.localeCompare(a.Модель);
+                    case 'price-asc':
+                        return a.Цена - b.Цена;
+                    case 'price-desc':
+                        return b.Цена - a.Цена;
+                    case 'stock-desc':
+                        return b.В_наличии - a.В_наличии;
+                    case 'power-asc':
+                        return (parseInt(a.Мощность) || 0) - (parseInt(b.Мощность) || 0);
+                    case 'power-desc':
+                        return (parseInt(b.Мощность) || 0) - (parseInt(a.Мощность) || 0);
+                    default:
+                        return 0;
+                }
+            });
+            
             renderProducts();
             renderPagination();
         }
 
         // Отображение товаров
         function renderProducts() {
-            const start = (currentPage - 1) * productsPerPage;
-            const products = filteredProducts.slice(start, start + productsPerPage);
             const container = document.getElementById('products-container');
+            const startIndex = (currentPage - 1) * productsPerPage;
+            const endIndex = startIndex + productsPerPage;
+            const productsToShow = filteredProducts.slice(startIndex, endIndex);
             
-            container.innerHTML = products.map(product => {
+            if (productsToShow.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Товары не найдены. Попробуйте изменить параметры поиска.
+                        </div>
+                    </div>
+                `;
+                document.getElementById('pagination-container').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('pagination-container').style.display = 'block';
+            
+            container.innerHTML = productsToShow.map(product => {
                 const discountPrice = calculateDiscountPrice(product.Цена, currentDiscount);
+                const hasDiscount = currentDiscount > 0;
                 
                 return `
                     <div class="col">
                         <div class="card h-100">
-                            <img src="images/${product.Артикул}.jpg" class="card-img-top product-img" 
-                                 alt="${product.Модель}" onerror="this.src='images/default.jpg'">
+                            <img src="${product.Фото}" class="card-img-top product-img" 
+                                 alt="${product.Модель}" 
+                                 onerror="this.onerror=null; this.src='images/default.jpg'">
                             <div class="card-body">
-                                <h6 class="text-muted small">${product.Артикул}</h6>
-                                <h6 class="card-title">${product.Модель}</h6>
+                                <h6 class="text-muted small mb-1">Артикул: ${product.Артикул}</h6>
+                                <h5 class="card-title fs-6">${product.Модель}</h5>
                                 
                                 <div class="mb-2">
                                     <span class="badge bg-primary">${product.Мощность} кВт</span>
                                     <span class="badge bg-secondary">${product.Контуры}</span>
                                     ${product.WiFi === 'Да' ? '<span class="badge bg-success">Wi-Fi</span>' : ''}
+                                    ${product.В_наличии > 0 ? '<span class="badge bg-success">В наличии</span>' : '<span class="badge bg-danger">Нет в наличии</span>'}
                                 </div>
                                 
-                                <div class="mb-2">
-                                    ${currentDiscount > 0 ? `
-                                        <div class="original-price small">${product.Цена.toLocaleString('ru-RU')} руб.</div>
+                                <div class="price-section">
+                                    ${hasDiscount ? `
+                                        <div class="original-price">${product.Цена.toLocaleString('ru-RU')} руб.</div>
                                         <div class="discount-price">${discountPrice.toLocaleString('ru-RU')} руб.</div>
-                                        <div class="text-success small">Экономия ${currentDiscount}%</div>
+                                        <small class="text-success">Экономия ${currentDiscount}%</small>
                                     ` : `
-                                        <div class="fw-bold">${product.Цена.toLocaleString('ru-RU')} руб.</div>
+                                        <div class="fw-bold fs-5">${product.Цена.toLocaleString('ru-RU')} руб.</div>
                                     `}
                                 </div>
                                 
                                 <div class="mb-2">
                                     <span class="${product.В_наличии > 0 ? 'in-stock' : 'out-of-stock'}">
                                         <i class="bi ${product.В_наличии > 0 ? 'bi-check-circle' : 'bi-x-circle'}"></i>
-                                        ${product.Статус} (${product.В_наличии} шт.)
+                                        ${product.В_наличии > 0 ? `В наличии (${product.В_наличии} шт.)` : 'Нет в наличии'}
                                     </span>
                                 </div>
                             </div>
@@ -228,28 +412,85 @@
                 return;
             }
             
-            let html = '';
-            for (let i = 1; i <= totalPages; i++) {
-                html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
-                </li>`;
+            let paginationHTML = '';
+            
+            // Предыдущая страница
+            paginationHTML += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+            `;
+            
+            // Страницы
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
             }
             
-            pagination.innerHTML = html;
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
+                    </li>
+                `;
+            }
+            
+            // Следующая страница
+            paginationHTML += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+            
+            pagination.innerHTML = paginationHTML;
         }
 
+        // Смена страницы
         function changePage(page) {
             currentPage = page;
             renderProducts();
-            window.scrollTo(0, 0);
+            renderPagination();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Загрузка при старте
-        document.addEventListener('DOMContentLoaded', loadData);
-        
         // Поиск при нажатии Enter
         document.getElementById('search-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') filterProducts();
+            if (e.key === 'Enter') {
+                filterProducts();
+            }
+        });
+
+        // Автообновление каждые 5 минут
+        let autoRefreshInterval;
+
+        function startAutoRefresh() {
+            autoRefreshInterval = setInterval(loadData, 5 * 60 * 1000);
+        }
+
+        function stopAutoRefresh() {
+            clearInterval(autoRefreshInterval);
+        }
+
+        // Загрузка при открытии страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            startAutoRefresh();
+            
+            // Остановка автообновления при скрытии вкладки
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    stopAutoRefresh();
+                } else {
+                    startAutoRefresh();
+                }
+            });
         });
     </script>
 </body>
