@@ -3,204 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Каталог котлов - Laggartt</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Каталог котлов</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            padding-top: 20px;
-        }
-        .header {
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-            color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-            border-radius: 10px;
-        }
-        .product-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border: none;
-            border-radius: 15px;
-            overflow: hidden;
+        .card {
+            transition: transform 0.2s;
             height: 100%;
         }
-        .product-card:hover {
+        .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        .available-badge {
-            background-color: #28a745;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: bold;
+        .in-stock {
+            color: #198754;
         }
-        .out-of-stock-badge {
-            background-color: #dc3545;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: bold;
+        .out-of-stock {
+            color: #dc3545;
         }
         .price {
-            font-size: 1.5rem;
             font-weight: bold;
-            color: #2c3e50;
+            color: #0d6efd;
         }
         .search-box {
-            max-width: 400px;
-            margin: 0 auto 2rem;
+            position: sticky;
+            top: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .filters {
-            background-color: white;
-            padding: 1.5rem;
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            margin-bottom: 2rem;
-        }
-        .loading {
+            padding: 20px;
             text-align: center;
-            padding: 3rem;
-            color: #6c757d;
-        }
-        .error-message {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
-            padding: 1rem;
-            border-radius: 10px;
-            text-align: center;
-        }
-        .product-image {
-            height: 200px;
-            background: linear-gradient(45deg, #e3f2fd 0%, #bbdefb 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #1976d2;
-            font-size: 3rem;
-        }
-        .stats {
-            background-color: white;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 2rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Шапка -->
-        <div class="header text-center">
-            <div class="container">
-                <h1 class="display-4 fw-bold">🔥 Каталог котлов Laggartt</h1>
-                <p class="lead">Актуальные остатки и цены</p>
+    <div class="container py-4">
+        <!-- Заголовок -->
+        <header class="text-center mb-5">
+            <h1 class="display-4 fw-bold text-primary">Каталог котлов</h1>
+            <p class="lead text-muted">Актуальные цены и наличие товаров</p>
+            <div class="row justify-content-center mt-4">
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <h4 id="total-products">0</h4>
+                        <p class="mb-0">Всего товаров</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                        <h4 id="available-products">0</h4>
+                        <p class="mb-0">В наличии</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);">
+                        <h4 id="out-of-stock">0</h4>
+                        <p class="mb-0">Нет в наличии</p>
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <!-- Статистика -->
-        <div class="stats">
-            <div class="row text-center">
-                <div class="col-md-4">
-                    <h4 id="total-products">0</h4>
-                    <p class="text-muted">Всего товаров</p>
-                </div>
-                <div class="col-md-4">
-                    <h4 id="available-products">0</h4>
-                    <p class="text-muted">В наличии</p>
-                </div>
-                <div class="col-md-4">
-                    <h4 id="out-of-stock-products">0</h4>
-                    <p class="text-muted">Нет в наличии</p>
-                </div>
-            </div>
-        </div>
+        </header>
 
         <!-- Поиск и фильтры -->
-        <div class="filters">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="search-box">
-                        <input type="text" id="search-input" class="form-control form-control-lg" 
-                               placeholder="🔍 Поиск по названию или артикулу...">
+        <div class="row mb-4">
+            <div class="col-lg-8 mx-auto">
+                <div class="search-box">
+                    <div class="input-group">
+                        <input type="text" id="search-input" class="form-control" placeholder="Поиск по названию или артикулу..." aria-label="Поиск">
+                        <button class="btn btn-primary" type="button" onclick="filterProducts()">
+                            <i class="bi bi-search"></i> Найти
+                        </button>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="available-only" checked>
-                        <label class="form-check-label" for="available-only">
-                            Только товары в наличии
-                        </label>
-                    </div>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="sort-by-price">
-                        <label class="form-check-label" for="sort-by-price">
-                            Сортировать по цене (по возрастанию)
-                        </label>
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" id="in-stock-only" onchange="filterProducts()">
+                        <label class="form-check-label" for="in-stock-only">Только в наличии</label>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Контейнер для товаров -->
-        <div id="products-container">
-            <div class="loading">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Загрузка...</span>
+        <!-- Сортировка -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span id="product-count" class="text-muted">Найдено 0 товаров</span>
+                    <select id="sort-select" class="form-select w-auto" onchange="sortProducts()">
+                        <option value="name-asc">По названию (А-Я)</option>
+                        <option value="name-desc">По названию (Я-А)</option>
+                        <option value="price-asc">По цене (возрастание)</option>
+                        <option value="price-desc">По цене (убывание)</option>
+                        <option value="stock-desc">По наличию (сначала в наличии)</option>
+                    </select>
                 </div>
-                <p class="mt-3">Загружаем каталог товаров...</p>
             </div>
         </div>
 
-        <!-- Сообщение об ошибке -->
-        <div id="error-message" class="error-message" style="display: none;">
-            <h5>⚠️ Ошибка загрузки данных</h5>
-            <p>Не удалось загрузить каталог товаров. Пожалуйста, попробуйте позже.</p>
-            <button class="btn btn-warning btn-sm" onclick="loadProducts()">Попробовать снова</button>
+        <!-- Список товаров -->
+        <div id="products-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            <!-- Товары будут загружены через JavaScript -->
         </div>
+
+        <!-- Пагинация -->
+        <nav aria-label="Page navigation" class="mt-5">
+            <ul class="pagination justify-content-center" id="pagination">
+                <!-- Пагинация будет сгенерирована через JavaScript -->
+            </ul>
+        </nav>
+
+        <!-- Информация об обновлении -->
+        <footer class="text-center mt-5 text-muted">
+            <p>Данные обновляются автоматически каждый час. Последнее обновление: <span id="last-update">-</span></p>
+            <p>Для обновления данных нажмите <button class="btn btn-sm btn-outline-primary" onclick="loadData()">Обновить</button></p>
+        </footer>
     </div>
 
-    <!-- Футер -->
-    <footer class="bg-dark text-white text-center py-4 mt-5">
-        <div class="container">
-            <p>© 2024 Laggartt. Каталог товаров обновляется автоматически.</p>
-            <p>Последнее обновление: <span id="last-update">-</span></p>
-        </div>
-    </footer>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Глобальные переменные
         let allProducts = [];
+        let currentPage = 1;
+        const productsPerPage = 12;
         let filteredProducts = [];
 
         // Загрузка данных
-        async function loadProducts() {
+        async function loadData() {
             try {
-                showLoading();
-                
                 const response = await fetch('data.json');
-                if (!response.ok) {
-                    throw new Error(`Ошибка HTTP: ${response.status}`);
-                }
+                allProducts = await response.json();
                 
-                const data = await response.json();
+                // Добавляем время последнего обновления
+                document.getElementById('last-update').textContent = new Date().toLocaleString('ru-RU');
                 
-                if (!Array.isArray(data)) {
-                    throw new Error('Данные не являются массивом');
-                }
-
-                allProducts = data;
                 updateStatistics();
                 filterProducts();
-                hideError();
-                
             } catch (error) {
-                console.error('Ошибка загрузки:', error);
-                showError();
+                console.error('Ошибка загрузки данных:', error);
+                document.getElementById('products-container').innerHTML = `
+                    <div class="col-12 text-center">
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i> Не удалось загрузить данные. Пожалуйста, попробуйте позже.
+                        </div>
+                    </div>
+                `;
             }
         }
 
@@ -209,104 +159,153 @@
             const total = allProducts.length;
             const available = allProducts.filter(p => p.В_наличии > 0).length;
             const outOfStock = total - available;
-
+            
             document.getElementById('total-products').textContent = total;
             document.getElementById('available-products').textContent = available;
-            document.getElementById('out-of-stock-products').textContent = outOfStock;
-            
-            // Обновляем время последнего обновления
-            document.getElementById('last-update').textContent = new Date().toLocaleString('ru-RU');
+            document.getElementById('out-of-stock').textContent = outOfStock;
         }
 
-        // Фильтрация и поиск
+        // Фильтрация товаров
         function filterProducts() {
             const searchText = document.getElementById('search-input').value.toLowerCase();
-            const availableOnly = document.getElementById('available-only').checked;
-            const sortByPrice = document.getElementById('sort-by-price').checked;
-
+            const inStockOnly = document.getElementById('in-stock-only').checked;
+            
             filteredProducts = allProducts.filter(product => {
-                const matchesSearch = product.Модель?.toLowerCase().includes(searchText) || 
-                                    product.Артикул?.toLowerCase().includes(searchText);
-                const matchesAvailability = !availableOnly || product.В_наличии > 0;
-                return matchesSearch && matchesAvailability;
+                const matchesSearch = product.Модель.toLowerCase().includes(searchText) || 
+                                    product.Артикул.toLowerCase().includes(searchText);
+                const matchesStock = !inStockOnly || product.В_наличии > 0;
+                return matchesSearch && matchesStock;
             });
+            
+            document.getElementById('product-count').textContent = `Найдено ${filteredProducts.length} товаров`;
+            sortProducts();
+        }
 
-            if (sortByPrice) {
-                filteredProducts.sort((a, b) => (a.Цена || 0) - (b.Цена || 0));
-            }
-
-            displayProducts();
+        // Сортировка товаров
+        function sortProducts() {
+            const sortOption = document.getElementById('sort-select').value;
+            
+            filteredProducts.sort((a, b) => {
+                switch (sortOption) {
+                    case 'name-asc':
+                        return a.Модель.localeCompare(b.Модель);
+                    case 'name-desc':
+                        return b.Модель.localeCompare(a.Модель);
+                    case 'price-asc':
+                        return a.Цена - b.Цена;
+                    case 'price-desc':
+                        return b.Цена - a.Цена;
+                    case 'stock-desc':
+                        return b.В_наличии - a.В_наличии;
+                    default:
+                        return 0;
+                }
+            });
+            
+            currentPage = 1;
+            renderProducts();
+            renderPagination();
         }
 
         // Отображение товаров
-        function displayProducts() {
+        function renderProducts() {
             const container = document.getElementById('products-container');
+            const startIndex = (currentPage - 1) * productsPerPage;
+            const endIndex = startIndex + productsPerPage;
+            const productsToShow = filteredProducts.slice(startIndex, endIndex);
             
-            if (filteredProducts.length === 0) {
+            if (productsToShow.length === 0) {
                 container.innerHTML = `
-                    <div class="text-center py-5">
-                        <h4>😔 Товары не найдены</h4>
-                        <p class="text-muted">Попробуйте изменить параметры поиска или фильтры</p>
+                    <div class="col-12 text-center">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Товары не найдены. Попробуйте изменить параметры поиска.
+                        </div>
                     </div>
                 `;
                 return;
             }
-
-            container.innerHTML = filteredProducts.map(product => `
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card product-card h-100">
-                        <div class="product-image">
-                            🔥
-                        </div>
+            
+            container.innerHTML = productsToShow.map(product => `
+                <div class="col">
+                    <div class="card h-100">
                         <div class="card-body">
-                            <h5 class="card-title">${product.Модель || 'Без названия'}</h5>
-                            <p class="text-muted">Артикул: ${product.Артикул || 'Не указан'}</p>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="price">${product.Цена ? product.Цена.toLocaleString('ru-RU') + ' ₽' : 'Цена не указана'}</span>
-                                <span class="${product.В_наличии > 0 ? 'available-badge' : 'out-of-stock-badge'}">
-                                    ${product.В_наличии > 0 ? `В наличии: ${product.В_наличии} шт.` : 'Нет в наличии'}
+                            <h6 class="card-subtitle mb-2 text-muted">Арт: ${product.Артикул}</h6>
+                            <h5 class="card-title">${product.Модель}</h5>
+                            <div class="mb-2">
+                                <span class="price">${product.Цена.toLocaleString('ru-RU')} руб.</span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="${product.В_наличии > 0 ? 'in-stock' : 'out-of-stock'}">
+                                    <i class="bi ${product.В_наличии > 0 ? 'bi-check-circle' : 'bi-x-circle'}"></i>
+                                    ${product.Статус} (${product.В_наличии} шт.)
                                 </span>
                             </div>
-                            ${product.Статус ? `<p class="text-muted small">Статус: ${product.Статус}</p>` : ''}
                         </div>
                     </div>
                 </div>
             `).join('');
-
-            // Обновляем сетку
-            container.innerHTML = `<div class="row">${container.innerHTML}</div>`;
         }
 
-        // Вспомогательные функции
-        function showLoading() {
-            document.getElementById('products-container').innerHTML = `
-                <div class="loading">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Загрузка...</span>
-                    </div>
-                    <p class="mt-3">Загружаем каталог товаров...</p>
-                </div>
+        // Пагинация
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+            const pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let paginationHTML = '';
+            
+            // Предыдущая страница
+            paginationHTML += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">Назад</a>
+                </li>
             `;
+            
+            // Страницы
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHTML += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                    </li>
+                `;
+            }
+            
+            // Следующая страница
+            paginationHTML += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">Вперед</a>
+                </li>
+            `;
+            
+            pagination.innerHTML = paginationHTML;
         }
 
-        function showError() {
-            document.getElementById('error-message').style.display = 'block';
-            document.getElementById('products-container').innerHTML = '';
+        // Смена страницы
+        function changePage(page) {
+            currentPage = page;
+            renderProducts();
+            renderPagination();
+            window.scrollTo(0, 0);
         }
 
-        function hideError() {
-            document.getElementById('error-message').style.display = 'none';
-        }
+        // Поиск при нажатии Enter
+        document.getElementById('search-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                filterProducts();
+            }
+        });
 
-        // Обработчики событий
-        document.getElementById('search-input').addEventListener('input', filterProducts);
-        document.getElementById('available-only').addEventListener('change', filterProducts);
-        document.getElementById('sort-by-price').addEventListener('change', filterProducts);
-
-        // Запуск при загрузке страницы
-        document.addEventListener('DOMContentLoaded', loadProducts);
+        // Автозагрузка при открытии страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            
+            // Автообновление каждые 5 минут
+            setInterval(loadData, 5 * 60 * 1000);
+        });
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
