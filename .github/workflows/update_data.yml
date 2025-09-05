@@ -48,9 +48,10 @@ jobs:
           if [ -f "data.json" ]; then
             echo "✅ data.json создан успешно"
             echo "Размер файла: $(wc -l < data.json) строк"
-            echo "Количество записей: $(grep -c '"Артикул"' data.json)"
+            record_count=$(grep -c '"Артикул"' data.json || echo "0")
+            echo "Количество записей: $record_count"
             echo "Первые 2 записи:"
-            head -n 10 data.json | grep -A 8 -B 2 '"Артикул"'
+            head -n 10 data.json | grep -A 8 -B 2 '"Артикул"' || echo "Не удалось показать примеры"
           else
             echo "❌ data.json не создан!"
             exit 1
@@ -104,17 +105,25 @@ jobs:
             echo "Нет Excel файлов для очистки"
           fi
 
-      # Шаг 8: Финальная проверка
+      # Шаг 8: Финальная проверка (исправленная)
       - name: Final check
         run: |
           echo "=== ФИНАЛЬНАЯ ПРОВЕРКА ==="
           echo "Время завершения: $(date)"
+          
           if [ -f "data.json" ]; then
-            record_count=$(grep -c '"Артикул"' data.json)
-            available_count=$(grep -c '"В_наличии": [1-9]' data.json)
+            # Безопасный подсчет записей
+            record_count=$(grep -c '"Артикул"' data.json || echo "0")
+            available_count=$(grep -c '"В_наличии": [1-9][0-9]*' data.json || echo "0")
+            
             echo "Статус: ✅ Workflow выполнен успешно"
             echo "Обработано записей: $record_count"
             echo "Товаров в наличии: $available_count"
+            echo "Последние артикулы:"
+            grep '"Артикул"' data.json | tail -3 || echo "Не удалось показать артикулы"
           else
             echo "Статус: ⚠️ Workflow завершен, но data.json не создан"
+            echo "Проверьте логи скрипта выше"
           fi
+          
+          echo "================================="
