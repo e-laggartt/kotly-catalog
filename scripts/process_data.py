@@ -95,6 +95,16 @@ def main():
         
         # Объединяем все возможные артикулы
         merged_df = pd.merge(price_df, stock_df, on='Артикул', how='outer')
+
+        print("=== ПРОВЕРКА ОБЪЕДИНЕНИЯ ===")
+        print(f"Всего записей после объединения: {len(merged_df)}")
+        print(f"Из прайса: {len(price_df)}")
+        print(f"Из остатков: {len(stock_df)}")
+        print(f"Общих артикулов: {len(set(price_df['Артикул']).intersection(set(stock_df['Артикул'])))}")
+        
+        # Покажем статистику по наличию
+        print(f"Товаров в наличии: {len(merged_df[merged_df['В_наличии'] > 0])}")
+        print(f"Товаров нет в наличии: {len(merged_df[merged_df['В_наличии'] == 0])}")
         
         # Заполняем пропущенные значения
         merged_df['В_наличии'] = merged_df['В_наличии'].fillna(0).astype(int)
