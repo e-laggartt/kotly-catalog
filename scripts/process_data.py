@@ -6,7 +6,7 @@ def main():
     try:
         print("Загрузка данных из Google Sheets...")
         
-        # Прямые ссылки на CSV экспорт Google Sheets
+        # Прямые ссылки на CSV экспорт
         price_url = "https://docs.google.com/spreadsheets/d/19PRNpA6F_HMI6iHSCg2iJF52PnN203ckY1WnqY_t5fc/export?format=csv"
         stock_url = "https://docs.google.com/spreadsheets/d/1o0e3-E20mQsWToYVQpCHZgLcbizCafLRpoPdxr8Rqfw/export?format=csv"
         
@@ -19,64 +19,54 @@ def main():
         
         print("Обработка данных...")
         
-        # Автоматически находим нужные колонки
-        def find_column(df, possible_names):
-            for col in df.columns:
-                col_lower = str(col).lower()
-                if any(name.lower() in col_lower for name in possible_names):
-                    return col
-            return None
+        # Переименовываем колонки для единообразия
+        price_df = price_df.rename(columns={
+            'Артикул': 'Артикул',
+            'Модель': 'Модель', 
+            'Цена, руб': 'Цена'
+        })
         
-        # Для прайса
-        article_col_price = find_column(price_df, ['артикул', 'article', 'код', 'articul', 'sku'])
-        name_col = find_column(price_df, ['товар', 'наименование', 'модель', 'name', 'product', 'название'])
-        price_col = find_column(price_df, ['розничная', 'цена', 'price', 'retail', 'стоимость', 'руб'])
-        
-        print(f"Колонки в прайсе: Артикул='{article_col_price}', Модель='{name_col}', Цена='{price_col}'")
-        
-        # Для остатков
-        article_col_stock = find_column(stock_df, ['артикул', 'article', 'код', 'articul', 'sku'])
-        stock_col = find_column(stock_df, ['в наличии', 'остаток', 'количество', 'quantity', 'stock', 'наличие', 'кол-во'])
-        
-        print(f"Колонки в остатках: Артикул='{article_col_stock}', Наличие='{stock_col}'")
-        
-        # Создаем копии с нужными колонками
-        price_clean = price_df[[article_col_price, name_col, price_col]].copy()
-        price_clean.columns = ['Артикул', 'Модель', 'Цена']
-        
-        stock_clean = stock_df[[article_col_stock, stock_col]].copy()
-        stock_clean.columns = ['Артикул', 'В_наличии']
+        stock_df = stock_df.rename(columns={
+            'Артикул': 'Артикул',
+            'В наличии': 'В_наличии'
+        })
         
         # Очистка данных
-        price_clean = price_clean.dropna(subset=['Артикул'])
-        price_clean['Артикул'] = price_clean['Артикул'].astype(str).str.strip()
+        price_df = price_df.dropna(subset=['Артикул'])
+        price_df['Артикул'] = price_df['Артикул'].astype(str).str.strip()
         
-        stock_clean = stock_clean.dropna(subset=['Артикул'])
-        stock_clean['Артикул'] = stock_clean['Артикул'].astype(str).str.strip()
+        stock_df = stock_df.dropna(subset=['Артикул'])
+        stock_df['Артикул'] = stock_df['Артикул'].astype(str).str.strip()
+        
+        # Обработка цены (убираем пробелы и запятые)
+        def parse_price(price):
+            try:
+                if pd.isna(price):
+                    return 0.0
+                price_str = str(price).replace(' ', '').replace(',', '.')
+                # Убираем все нечисловые символы кроме точки
+                price_str = re.sub(r'[^\d\.]', '', price_str)
+                return float(price_str)
+            except:
+                return 0.0
+        
+        price_df['Цена'] = price_df['Цена'].apply(parse_price)
         
         # Обработка количества
         def parse_quantity(qty):
             try:
-                qty = float(str(qty).replace(' ', '').replace(',', '.'))
-                return max(0, int(qty))
+                if pd.isna(qty):
+                    return 0
+                qty_str = str(qty).replace(' ', '').replace(',', '.')
+                qty_val = float(qty_str)
+                return max(0, int(qty_val))  # Отрицательные -> 0
             except:
                 return 0
         
-        stock_clean['В_наличии'] = stock_clean['В_наличии'].apply(parse_quantity)
-        
-        # Обработка цены
-        def parse_price(price):
-            try:
-                price = str(price).replace(' ', '').replace(',', '.')
-                price = re.sub(r'[^\d\.]', '', price)
-                return float(price)
-            except:
-                return 0.0
-        
-        price_clean['Цена'] = price_clean['Цена'].apply(parse_price)
+        stock_df['В_наличии'] = stock_df['В_наличии'].apply(parse_quantity)
         
         # Объединяем данные
-        merged_df = pd.merge(price_clean, stock_clean, on='Артикул', how='left')
+        merged_df = pd.merge(price_df, stock_df, on='Артикул', how='left')
         merged_df['В_наличии'] = merged_df['В_наличии'].fillna(0).astype(int)
         
         # Добавляем дополнительные поля
@@ -95,7 +85,7 @@ def main():
             
             return power, contours, wifi
         
-        # Применяем функцию
+        # Применяем функцию к каждой модели
         merged_df[['Мощность', 'Контуры', 'WiFi']] = merged_df['Модель'].apply(
             lambda x: pd.Series(extract_info(x))
         )
@@ -113,6 +103,11 @@ def main():
         print(f"✅ Готово! Обработано {len(result)} товаров")
         print(f"📊 В наличии: {sum(1 for x in result if x['В_наличии'] > 0)} товаров")
         
+        # Покажем пример данных
+        print("\nПример данных (первые 3 товара):")
+        for i, item in enumerate(result[:3]):
+            print(f"{i+1}. {item['Артикул']} - {item['Модель'][:30]}... - {item['Цена']} руб. - {item['В_наличии']} шт.")
+            
     except Exception as e:
         print(f"❌ Ошибка: {e}")
         import traceback
