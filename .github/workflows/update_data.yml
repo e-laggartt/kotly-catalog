@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pandas requests openpyxl
+          pip install -r requirements.txt
 
       # Шаг 4: Запускаем скрипт обработки данных
       - name: Run processing script
@@ -42,7 +42,7 @@ jobs:
       - name: Verify generated files
         run: |
           echo "Проверяем созданные файлы:"
-          ls -la *.json 2>/dev/null || echo "Файлы не найдены"
+          ls -la *.json 2>/dev/null || echo "JSON файлы не найдены"
           
           if [ -f "data.json" ]; then
             echo "✅ data.json создан успешно"
@@ -50,6 +50,8 @@ jobs:
             available_count=$(grep -c '"В_наличии": [1-9][0-9]*' data.json || echo "0")
             echo "Количество записей: $record_count"
             echo "Товаров в наличии: $available_count"
+            echo "Первые 2 артикула:"
+            grep '"Артикул"' data.json | head -2 || echo "Не удалось показать артикулы"
           else
             echo "❌ data.json не создан!"
             exit 1
@@ -58,11 +60,18 @@ jobs:
       # Шаг 6: Коммитим и пушим изменения
       - name: Commit and push changes
         run: |
+          # Настраиваем git
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
+          # Добавляем только data.json
           git add data.json
           
+          # Проверяем статус
+          echo "Текущий статус git:"
+          git status
+          
+          # Коммитим и пушим если есть изменения
           if ! git diff --staged --quiet; then
             git commit -m "Auto-update: данные обновлены из Google Таблиц [skip ci]"
             git push
@@ -71,19 +80,38 @@ jobs:
             echo "ℹ️ Изменений нет, пропускаем коммит"
           fi
 
-      # Шаг 7: Финальная проверка
+      # Шаг 7: Очищаем старые Excel файлы (если они есть)
+      - name: Cleanup old Excel files
+        run: |
+          # Удаляем старые Excel файлы если они существуют
+          if ls Сводная_таблица_котлы_*.xlsx 1> /dev/null 2>&1; then
+            echo "Очищаем старые Excel файлы..."
+            rm -f Сводная_таблица_котлы_*.xlsx
+            echo "Excel файлы удалены"
+          else
+            echo "Нет Excel файлов для очистки"
+          fi
+
+      # Шаг 8: Финальная проверка
       - name: Final check
         run: |
           echo "=== ФИНАЛЬНАЯ ПРОВЕРКА ==="
           echo "Время завершения: $(date)"
           
           if [ -f "data.json" ]; then
+            # Безопасный подсчет записей
             record_count=$(grep -c '"Артикул"' data.json || echo "0")
             available_count=$(grep -c '"В_наличии": [1-9][0-9]*' data.json || echo "0")
             
             echo "Статус: ✅ Workflow выполнен успешно"
             echo "Обработано записей: $record_count"
             echo "Товаров в наличии: $available_count"
+            echo "Последние артикулы:"
+            grep '"Артикул"' data.json | tail -3 || echo "Не удалось показать артикулы"
           else
             echo "Статус: ⚠️ Workflow завершен, но data.json не создан"
+            echo "Проверьте логи скрипта выше"
+            exit 1
           fi
+          
+          echo "================================="
