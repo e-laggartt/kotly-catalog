@@ -107,7 +107,7 @@
             font-size: 0.95rem;
             line-height: 1.4;
             margin-bottom: 10px;
-            height: 36px; /* Уменьшено с 40px */
+            height: 36px;
             overflow: hidden;
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -313,8 +313,8 @@
             border: 1px solid #e2e8f0;
         }
 
-        /* Стили для аккордеона фильтров */
-        .filter-accordion-button {
+        /* Стили для аккордеонов */
+        .accordion-button {
             width: 100%;
             display: flex;
             justify-content: space-between;
@@ -327,13 +327,13 @@
             border-radius: 8px;
             margin-bottom: 15px;
         }
-        .filter-accordion-button:hover {
+        .accordion-button:hover {
             background: var(--primary-dark);
         }
-        .filter-accordion-button .bi {
+        .accordion-button .bi {
             transition: transform 0.3s ease;
         }
-        .filter-accordion-body {
+        .accordion-body {
             overflow: hidden;
             transition: max-height 0.3s ease-out, opacity 0.3s ease;
         }
@@ -355,7 +355,7 @@
             
             .card-title {
                 font-size: 0.9rem;
-                height: 32px; /* Уменьшено с 36px */
+                height: 32px;
             }
             
             .stat-card {
@@ -373,25 +373,25 @@
             .filter-section, .discount-section {
                 padding: 16px;
             }
-            /* На мобильных скрываем аккордеон по умолчанию */
-            #filter-accordion-body {
+            /* На мобильных скрываем аккордеоны по умолчанию */
+            .accordion-body {
                 max-height: 0;
                 opacity: 0;
             }
-            #filter-accordion-body.show {
+            .accordion-body.show {
                 max-height: 500px;
                 opacity: 1;
             }
-            .filter-accordion-button .bi-chevron-up {
+            .accordion-button .bi-chevron-up {
                 transform: rotate(180deg);
             }
         }
-        /* На десктопах аккордеон всегда развернут */
+        /* На десктопах аккордеоны всегда развернуты */
         @media (min-width: 769px) {
-            .filter-accordion-button {
+            .accordion-button {
                 display: none;
             }
-            #filter-accordion-body {
+            .accordion-body {
                 max-height: none !important;
                 opacity: 1 !important;
                 display: block !important;
@@ -475,42 +475,52 @@
             </div>
         </div>
 
-        <!-- Секция скидок -->
+        <!-- Секция скидок (МОДИФИЦИРОВАНО - добавлен аккордеон) -->
         <div class="discount-section">
-            <h5 class="mb-3"><i class="bi bi-percent"></i> Расчет персональной скидки</h5>
-            <div class="row align-items-center">
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Размер скидки: <span id="discount-value">0</span>%</label>
-                    <input type="range" class="form-range" id="discount-slider" min="0" max="50" value="0" 
-                           oninput="updateDiscount(this.value)">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label fw-bold">Или введите %:</label>
-                    <input type="number" class="form-control" id="discount-input" min="0" max="50" value="0"
-                           oninput="updateDiscount(this.value)" placeholder="0">
-                </div>
-                <div class="col-md-6">
-                    <div class="form-check form-switch mb-2">
-                        <input class="form-check-input" type="checkbox" id="show-original" 
-                               onchange="toggleOriginalPrices()">
-                        <label class="form-check-label" for="show-original">
-                            Показывать оригинальные цены
-                        </label>
+            <!-- Кнопка-аккордеон для мобильных -->
+            <button type="button" class="accordion-button d-md-none" id="discount-accordion-button" onclick="toggleDiscounts()">
+                <span><i class="bi bi-percent"></i> Расчет скидки</span>
+                <i class="bi bi-chevron-up"></i>
+            </button>
+
+            <h5 class="mb-3 d-none d-md-block"><i class="bi bi-percent"></i> Расчет персональной скидки</h5>
+            
+            <!-- Тело аккордеона -->
+            <div class="accordion-body" id="discount-accordion-body">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Размер скидки: <span id="discount-value">0</span>%</label>
+                        <input type="range" class="form-range" id="discount-slider" min="0" max="50" value="0" 
+                               oninput="updateDiscount(this.value)">
                     </div>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="auto-apply" checked>
-                        <label class="form-check-label" for="auto-apply">
-                            Автоматически применять скидку
-                        </label>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Или введите %:</label>
+                        <input type="number" class="form-control" id="discount-input" min="0" max="50" value="0"
+                               oninput="updateDiscount(this.value)" placeholder="0">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="show-original" 
+                                   onchange="toggleOriginalPrices()">
+                            <label class="form-check-label" for="show-original">
+                                Показывать оригинальные цены
+                            </label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="auto-apply" checked>
+                            <label class="form-check-label" for="auto-apply">
+                                Автоматически применять скидку
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Фильтры (МОДИФИЦИРОВАНО) -->
+        <!-- Фильтры -->
         <div class="filter-section">
             <!-- Кнопка-аккордеон для мобильных -->
-            <button type="button" class="filter-accordion-button d-md-none" id="filter-accordion-button" onclick="toggleFilters()">
+            <button type="button" class="accordion-button d-md-none" id="filter-accordion-button" onclick="toggleFilters()">
                 <span><i class="bi bi-funnel"></i> Фильтры</span>
                 <i class="bi bi-chevron-up"></i>
             </button>
@@ -518,7 +528,7 @@
             <h5 class="mb-3 text-primary d-none d-md-block"><i class="bi bi-funnel"></i> Фильтры</h5>
             
             <!-- Тело аккордеона -->
-            <div class="filter-accordion-body" id="filter-accordion-body">
+            <div class="accordion-body" id="filter-accordion-body">
                 <div class="row g-3">
                     <div class="col-12 col-md-3">
                         <select class="form-select" id="power-filter">
@@ -675,9 +685,15 @@
         let showOriginalPrices = false;
         let cart = [];
 
-        // Новая функция для переключения видимости фильтров
+        // Функция для переключения видимости фильтров
         function toggleFilters() {
             const accordionBody = document.getElementById('filter-accordion-body');
+            accordionBody.classList.toggle('show');
+        }
+
+        // Новая функция для переключения видимости скидок
+        function toggleDiscounts() {
+            const accordionBody = document.getElementById('discount-accordion-body');
             accordionBody.classList.toggle('show');
         }
 
