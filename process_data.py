@@ -94,29 +94,29 @@ def main():
             """Определяет какое фото использовать для модели"""
             model = str(model_name).upper()
             
-            # Правила сопоставления моделей с фото
+            # Правила сопоставления моделей с фото (используем новые имена файлов)
             if 'METEOR T2' in model:
-                return 'images/METEOR_T2.jpg'
+                return 'images/meteor-t2.jpg'
             elif 'METEOR C30' in model:
-                return 'images/METEOR_C30.jpg'
+                return 'images/meteor-c30.jpg'
             elif 'METEOR B30' in model:
-                return 'images/METEOR_B30.jpg'
+                return 'images/meteor-b30.jpg'
             elif 'METEOR B20' in model:
-                return 'images/METEOR_B20.jpg'
+                return 'images/meteor-b20.jpg'
             elif 'METEOR C11' in model:
-                return 'images/METEOR_C11.jpg'
+                return 'images/meteor-c11.jpg'
             elif 'METEOR Q3' in model:
-                return 'images/METEOR_Q3.jpg'
+                return 'images/meteor-q3.jpg'
             elif 'METEOR M30' in model:
-                return 'images/METEOR_M30.jpg'
+                return 'images/meteor-m30.jpg'
             elif 'METEOR M6' in model:
-                return 'images/METEOR_M6.jpg'
+                return 'images/meteor-m6.jpg'
             elif 'LAGGARTT' in model or 'ГАЗ 6000' in model:
-                return 'images/LaggarTT.jpg'
+                return 'images/laggartt.jpg'
             elif 'DEVOTION' in model:
-                return 'images/Devotion.jpg'
+                return 'images/devotion.jpg'
             elif 'MK' in model:
-                return 'images/MK.jpg'
+                return 'images/mk.jpg'
             else:
                 return 'images/default.jpg'
         
@@ -185,3 +185,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
