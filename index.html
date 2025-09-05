@@ -7,199 +7,163 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <style>
-        .card {
-            transition: transform 0.2s;
-            height: 100%;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .in-stock {
-            color: #198754;
-        }
-        .out-of-stock {
-            color: #dc3545;
-        }
-        .price {
-            font-weight: bold;
-            color: #0d6efd;
-        }
-        .search-box {
-            position: sticky;
-            top: 20px;
-            z-index: 1000;
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-        }
+        .card { transition: transform 0.2s; height: 100%; }
+        .card:hover { transform: translateY(-5px); }
+        .in-stock { color: #198754; }
+        .out-of-stock { color: #dc3545; }
+        .original-price { text-decoration: line-through; color: #6c757d; }
+        .discount-price { font-weight: bold; color: #dc3545; }
+        .discount-section { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        .product-img { height: 180px; object-fit: contain; background: #f8f9fa; padding: 10px; }
     </style>
 </head>
 <body>
     <div class="container py-4">
-        <!-- Заголовок -->
-        <header class="text-center mb-5">
-            <h1 class="display-4 fw-bold text-primary">Каталог котлов</h1>
-            <p class="lead text-muted">Актуальные цены и наличие товаров</p>
-            <div class="row justify-content-center mt-4">
-                <div class="col-md-3 mb-3">
-                    <div class="stat-card">
-                        <h4 id="total-products">0</h4>
-                        <p class="mb-0">Всего товаров</p>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                        <h4 id="available-products">0</h4>
-                        <p class="mb-0">В наличии</p>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <div class="stat-card" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);">
-                        <h4 id="out-of-stock">0</h4>
-                        <p class="mb-0">Нет в наличии</p>
-                    </div>
-                </div>
-            </div>
+        <header class="text-center mb-4">
+            <h1 class="display-5 fw-bold text-primary">Каталог газовых котлов</h1>
+            <p class="text-muted">Актуальные цены и наличие</p>
         </header>
 
-        <!-- Поиск и фильтры -->
+        <!-- Секция скидок -->
         <div class="row mb-4">
-            <div class="col-lg-8 mx-auto">
-                <div class="search-box">
-                    <div class="input-group">
-                        <input type="text" id="search-input" class="form-control" placeholder="Поиск по названию или артикулу..." aria-label="Поиск">
-                        <button class="btn btn-primary" type="button" onclick="filterProducts()">
-                            <i class="bi bi-search"></i> Найти
+            <div class="col-12">
+                <div class="discount-section">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <label class="form-label">Скидка %</label>
+                            <input type="range" class="form-range" id="discount-slider" min="0" max="50" value="0" 
+                                   oninput="updateDiscount(this.value)">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" class="form-control" id="discount-input" min="0" max="50" value="0"
+                                   oninput="updateDiscount(this.value)" placeholder="0">
+                        </div>
+                        <div class="col-md-7">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="show-original" 
+                                       onchange="toggleOriginalPrices()">
+                                <label class="form-check-label" for="show-original">
+                                    Показывать оригинальные цены
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Фильтры -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" id="search-input" placeholder="Поиск...">
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="power-filter">
+                            <option value="">Мощность</option>
+                            <option value="18">18 кВт</option>
+                            <option value="24">24 кВт</option>
+                            <option value="28">28 кВт</option>
+                            <option value="30">30 кВт</option>
+                            <option value="32">32 кВт</option>
+                            <option value="36">36 кВт</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="contour-filter">
+                            <option value="">Контуры</option>
+                            <option value="Двухконтурный">Двухконтурные</option>
+                            <option value="Одноконтурный">Одноконтурные</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="wifi-filter">
+                            <option value="">Wi-Fi</option>
+                            <option value="Да">С Wi-Fi</option>
+                            <option value="Нет">Без Wi-Fi</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="stock-filter">
+                            <option value="">Наличие</option>
+                            <option value="available">В наличии</option>
+                            <option value="outofstock">Нет в наличии</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1">
+                        <button class="btn btn-primary w-100" onclick="filterProducts()">
+                            <i class="bi bi-filter"></i>
                         </button>
                     </div>
-                    <div class="form-check form-switch mt-2">
-                        <input class="form-check-input" type="checkbox" id="in-stock-only" onchange="filterProducts()">
-                        <label class="form-check-label" for="in-stock-only">Только в наличии</label>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Сортировка -->
-        <div class="row mb-3">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span id="product-count" class="text-muted">Найдено 0 товаров</span>
-                    <select id="sort-select" class="form-select w-auto" onchange="sortProducts()">
-                        <option value="name-asc">По названию (А-Я)</option>
-                        <option value="name-desc">По названию (Я-А)</option>
-                        <option value="price-asc">По цене (возрастание)</option>
-                        <option value="price-desc">По цене (убывание)</option>
-                        <option value="stock-desc">По наличию (сначала в наличии)</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <!-- Список товаров -->
-        <div id="products-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            <!-- Товары будут загружены через JavaScript -->
-        </div>
+        <!-- Товары -->
+        <div id="products-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"></div>
 
         <!-- Пагинация -->
-        <nav aria-label="Page navigation" class="mt-5">
-            <ul class="pagination justify-content-center" id="pagination">
-                <!-- Пагинация будет сгенерирована через JavaScript -->
-            </ul>
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center" id="pagination"></ul>
         </nav>
-
-        <!-- Информация об обновлении -->
-        <footer class="text-center mt-5 text-muted">
-            <p>Данные обновляются автоматически каждый час. Последнее обновление: <span id="last-update">-</span></p>
-            <p>Для обновления данных нажмите <button class="btn btn-sm btn-outline-primary" onclick="loadData()">Обновить</button></p>
-        </footer>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let allProducts = [];
+        let filteredProducts = [];
         let currentPage = 1;
         const productsPerPage = 12;
-        let filteredProducts = [];
+        let currentDiscount = 0;
+        let showOriginalPrices = false;
 
         // Загрузка данных
         async function loadData() {
             try {
                 const response = await fetch('data.json');
                 allProducts = await response.json();
-                
-                // Добавляем время последнего обновления
-                document.getElementById('last-update').textContent = new Date().toLocaleString('ru-RU');
-                
-                updateStatistics();
                 filterProducts();
             } catch (error) {
-                console.error('Ошибка загрузки данных:', error);
-                document.getElementById('products-container').innerHTML = `
-                    <div class="col-12 text-center">
-                        <div class="alert alert-danger">
-                            <i class="bi bi-exclamation-triangle"></i> Не удалось загрузить данные. Пожалуйста, попробуйте позже.
-                        </div>
-                    </div>
-                `;
+                console.error('Ошибка загрузки:', error);
             }
         }
 
-        // Обновление статистики
-        function updateStatistics() {
-            const total = allProducts.length;
-            const available = allProducts.filter(p => p.В_наличии > 0).length;
-            const outOfStock = total - available;
-            
-            document.getElementById('total-products').textContent = total;
-            document.getElementById('available-products').textContent = available;
-            document.getElementById('out-of-stock').textContent = outOfStock;
+        // Расчет цены со скидкой
+        function calculateDiscountPrice(price, discount) {
+            return Math.round(price * (1 - discount / 100));
         }
 
-        // Фильтрация товаров
+        // Обновление скидки
+        function updateDiscount(value) {
+            value = Math.max(0, Math.min(50, parseInt(value) || 0));
+            document.getElementById('discount-slider').value = value;
+            document.getElementById('discount-input').value = value;
+            currentDiscount = value;
+            renderProducts();
+        }
+
+        // Переключение показа оригинальных цен
+        function toggleOriginalPrices() {
+            showOriginalPrices = document.getElementById('show-original').checked;
+            renderProducts();
+        }
+
+        // Фильтрация
         function filterProducts() {
-            const searchText = document.getElementById('search-input').value.toLowerCase();
-            const inStockOnly = document.getElementById('in-stock-only').checked;
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const power = document.getElementById('power-filter').value;
+            const contour = document.getElementById('contour-filter').value;
+            const wifi = document.getElementById('wifi-filter').value;
+            const stock = document.getElementById('stock-filter').value;
             
             filteredProducts = allProducts.filter(product => {
-                const matchesSearch = product.Модель.toLowerCase().includes(searchText) || 
-                                    product.Артикул.toLowerCase().includes(searchText);
-                const matchesStock = !inStockOnly || product.В_наличии > 0;
-                return matchesSearch && matchesStock;
-            });
-            
-            document.getElementById('product-count').textContent = `Найдено ${filteredProducts.length} товаров`;
-            sortProducts();
-        }
-
-        // Сортировка товаров
-        function sortProducts() {
-            const sortOption = document.getElementById('sort-select').value;
-            
-            filteredProducts.sort((a, b) => {
-                switch (sortOption) {
-                    case 'name-asc':
-                        return a.Модель.localeCompare(b.Модель);
-                    case 'name-desc':
-                        return b.Модель.localeCompare(a.Модель);
-                    case 'price-asc':
-                        return a.Цена - b.Цена;
-                    case 'price-desc':
-                        return b.Цена - a.Цена;
-                    case 'stock-desc':
-                        return b.В_наличии - a.В_наличии;
-                    default:
-                        return 0;
-                }
+                return (
+                    product.Модель.toLowerCase().includes(search) &&
+                    (!power || product.Мощность == power) &&
+                    (!contour || product.Контуры === contour) &&
+                    (!wifi || product.WiFi === wifi) &&
+                    (!stock || (stock === 'available' && product.В_наличии > 0) || (stock === 'outofstock' && product.В_наличии === 0))
+                );
             });
             
             currentPage = 1;
@@ -209,41 +173,49 @@
 
         // Отображение товаров
         function renderProducts() {
+            const start = (currentPage - 1) * productsPerPage;
+            const products = filteredProducts.slice(start, start + productsPerPage);
             const container = document.getElementById('products-container');
-            const startIndex = (currentPage - 1) * productsPerPage;
-            const endIndex = startIndex + productsPerPage;
-            const productsToShow = filteredProducts.slice(startIndex, endIndex);
             
-            if (productsToShow.length === 0) {
-                container.innerHTML = `
-                    <div class="col-12 text-center">
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i> Товары не найдены. Попробуйте изменить параметры поиска.
+            container.innerHTML = products.map(product => {
+                const discountPrice = calculateDiscountPrice(product.Цена, currentDiscount);
+                
+                return `
+                    <div class="col">
+                        <div class="card h-100">
+                            <img src="images/${product.Артикул}.jpg" class="card-img-top product-img" 
+                                 alt="${product.Модель}" onerror="this.src='images/default.jpg'">
+                            <div class="card-body">
+                                <h6 class="text-muted small">${product.Артикул}</h6>
+                                <h6 class="card-title">${product.Модель}</h6>
+                                
+                                <div class="mb-2">
+                                    <span class="badge bg-primary">${product.Мощность} кВт</span>
+                                    <span class="badge bg-secondary">${product.Контуры}</span>
+                                    ${product.WiFi === 'Да' ? '<span class="badge bg-success">Wi-Fi</span>' : ''}
+                                </div>
+                                
+                                <div class="mb-2">
+                                    ${currentDiscount > 0 ? `
+                                        <div class="original-price small">${product.Цена.toLocaleString('ru-RU')} руб.</div>
+                                        <div class="discount-price">${discountPrice.toLocaleString('ru-RU')} руб.</div>
+                                        <div class="text-success small">Экономия ${currentDiscount}%</div>
+                                    ` : `
+                                        <div class="fw-bold">${product.Цена.toLocaleString('ru-RU')} руб.</div>
+                                    `}
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <span class="${product.В_наличии > 0 ? 'in-stock' : 'out-of-stock'}">
+                                        <i class="bi ${product.В_наличии > 0 ? 'bi-check-circle' : 'bi-x-circle'}"></i>
+                                        ${product.Статус} (${product.В_наличии} шт.)
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
-                return;
-            }
-            
-            container.innerHTML = productsToShow.map(product => `
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h6 class="card-subtitle mb-2 text-muted">Арт: ${product.Артикул}</h6>
-                            <h5 class="card-title">${product.Модель}</h5>
-                            <div class="mb-2">
-                                <span class="price">${product.Цена.toLocaleString('ru-RU')} руб.</span>
-                            </div>
-                            <div class="mb-3">
-                                <span class="${product.В_наличии > 0 ? 'in-stock' : 'out-of-stock'}">
-                                    <i class="bi ${product.В_наличии > 0 ? 'bi-check-circle' : 'bi-x-circle'}"></i>
-                                    ${product.Статус} (${product.В_наличии} шт.)
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+            }).join('');
         }
 
         // Пагинация
@@ -256,55 +228,28 @@
                 return;
             }
             
-            let paginationHTML = '';
-            
-            // Предыдущая страница
-            paginationHTML += `
-                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">Назад</a>
-                </li>
-            `;
-            
-            // Страницы
+            let html = '';
             for (let i = 1; i <= totalPages; i++) {
-                paginationHTML += `
-                    <li class="page-item ${i === currentPage ? 'active' : ''}">
-                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
-                    </li>
-                `;
+                html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                </li>`;
             }
             
-            // Следующая страница
-            paginationHTML += `
-                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">Вперед</a>
-                </li>
-            `;
-            
-            pagination.innerHTML = paginationHTML;
+            pagination.innerHTML = html;
         }
 
-        // Смена страницы
         function changePage(page) {
             currentPage = page;
             renderProducts();
-            renderPagination();
             window.scrollTo(0, 0);
         }
 
+        // Загрузка при старте
+        document.addEventListener('DOMContentLoaded', loadData);
+        
         // Поиск при нажатии Enter
         document.getElementById('search-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                filterProducts();
-            }
-        });
-
-        // Автозагрузка при открытии страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            loadData();
-            
-            // Автообновление каждые 5 минут
-            setInterval(loadData, 5 * 60 * 1000);
+            if (e.key === 'Enter') filterProducts();
         });
     </script>
 </body>
