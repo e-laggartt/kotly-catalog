@@ -14,11 +14,14 @@
             --accent: #f59e0b;
             --success: #10b981;
             --danger: #ef4444;
-            --light-bg: #ffffff;
+            --light-bg: #f8fafc;
             --card-bg: #ffffff;
             --text-primary: #1e293b;
             --text-secondary: #64748b;
             --gradient-primary: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            --gradient-accent: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
             --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
             --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
@@ -30,18 +33,16 @@
             color: var(--text-primary);
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             line-height: 1.6;
-            padding-bottom: 60px;
         }
 
         .navbar {
-            background: var(--light-bg) !important;
-            box-shadow: var(--shadow-sm);
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+            box-shadow: var(--shadow-md);
             padding: 0.5rem 0;
         }
 
         .navbar-brand {
             font-weight: 700;
-            color: var(--primary) !important;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -50,6 +51,7 @@
         .logo {
             height: 40px;
             width: auto;
+            filter: brightness(0) invert(1);
         }
 
         .card {
@@ -61,11 +63,13 @@
             margin-bottom: 16px;
             overflow: hidden;
             box-shadow: var(--shadow-sm);
+            border: 1px solid #e2e8f0;
         }
 
         .card:hover {
             transform: translateY(-4px);
             box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
         }
 
         .product-img {
@@ -103,11 +107,17 @@
             font-size: 0.7rem;
         }
 
+        .badge.bg-primary { background: var(--gradient-primary) !important; }
+        .badge.bg-secondary { background: var(--secondary) !important; }
+        .badge.bg-success { background: var(--gradient-success) !important; }
+        .badge.bg-warning { background: var(--gradient-accent) !important; color: white !important; }
+
         .price-section {
-            background: #f8fafc;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
             padding: 12px;
             border-radius: 8px;
             margin: 12px 0;
+            border: 1px solid #e2e8f0;
         }
 
         .current-price {
@@ -122,6 +132,9 @@
             gap: 4px;
             font-weight: 600;
             font-size: 0.9rem;
+            padding: 4px 8px;
+            border-radius: 8px;
+            background: #f8fafc;
         }
 
         .in-stock { color: var(--success); }
@@ -131,39 +144,68 @@
             background: var(--gradient-primary);
             color: white;
             border-radius: var(--border-radius);
-            padding: 16px;
+            padding: 20px;
             text-align: center;
             margin-bottom: 16px;
             box-shadow: var(--shadow-sm);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
         }
 
         .stat-card h4 {
             font-weight: 700;
             margin-bottom: 4px;
-            font-size: 1.5rem;
+            font-size: 2rem;
         }
 
         .stat-card p {
             margin-bottom: 0;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
+            opacity: 0.9;
         }
 
         .filter-section {
             background: var(--card-bg);
-            padding: 16px;
+            padding: 20px;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow-sm);
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 10px 16px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         /* Адаптивность */
         @media (max-width: 768px) {
             .container {
                 padding: 0 12px;
-            }
-            
-            .navbar-brand span {
-                display: none;
             }
             
             .logo {
@@ -181,15 +223,19 @@
             }
             
             .stat-card {
-                padding: 12px;
+                padding: 16px;
             }
             
             .stat-card h4 {
-                font-size: 1.2rem;
+                font-size: 1.5rem;
             }
             
             .current-price {
                 font-size: 1.1rem;
+            }
+            
+            .filter-section {
+                padding: 16px;
             }
         }
 
@@ -202,123 +248,160 @@
         .card {
             animation: fadeIn 0.4s ease-out;
         }
+
+        /* Статистика внизу */
+        .stats-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 40px 0;
+            margin-top: 40px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .section-title {
+            color: var(--text-primary);
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        /* Улучшенный поиск */
+        .search-container {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
     </style>
 </head>
 <body>
     <!-- Навигация -->
-    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
             <a class="navbar-brand" href="#">
                 <img src="images/lagar.png" alt="METEOR" class="logo">
-                <span>METEOR</span>
             </a>
             <div class="navbar-nav ms-auto">
-                <span class="navbar-text text-muted small">
+                <span class="navbar-text small">
                     <i class="bi bi-arrow-repeat"></i> <span id="last-update">-</span>
                 </span>
             </div>
         </div>
     </nav>
 
-    <div class="container py-3">
-        <!-- Статистика -->
-        <div class="row mb-3">
-            <div class="col-6 col-md-3 mb-2">
-                <div class="stat-card">
-                    <h4 id="total-products">0</h4>
-                    <p>Моделей</p>
-                </div>
-            </div>
-            <div class="col-6 col-md-3 mb-2">
-                <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                    <h4 id="available-products">0</h4>
-                    <p>В наличии</p>
-                </div>
-            </div>
-            <div class="col-6 col-md-3 mb-2">
-                <div class="stat-card" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
-                    <h4 id="out-of-stock">0</h4>
-                    <p>Под заказ</p>
-                </div>
-            </div>
-            <div class="col-6 col-md-3 mb-2">
-                <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                    <h4 id="wifi-count">0</h4>
-                    <p>С Wi-Fi</p>
-                </div>
-            </div>
-        </div>
-
+    <div class="container py-4">
         <!-- Поиск -->
-        <div class="row mb-3">
-            <div class="col-12">
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" id="search-input" placeholder="Поиск по названию или артикулу..." onkeypress="if(event.key==='Enter')filterProducts()">
-                    <button class="btn btn-primary" onclick="filterProducts()">
-                        <i class="bi bi-search"></i>
-                    </button>
+        <div class="search-container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="input-group">
+                        <span class="input-group-text bg-primary text-white"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="search-input" placeholder="Поиск по названию или артикулу..." onkeypress="if(event.key==='Enter')filterProducts()">
+                        <button class="btn btn-primary" onclick="filterProducts()">
+                            <i class="bi bi-search"></i> Найти
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Фильтры -->
-        <div class="row mb-3">
-            <div class="col-md-3 mb-2">
-                <select class="form-select" id="power-filter">
-                    <option value="">Все мощности</option>
-                    <option value="18">18 кВт</option>
-                    <option value="24">24 кВт</option>
-                    <option value="28">28 кВт</option>
-                    <option value="30">30 кВт</option>
-                    <option value="32">32 кВт</option>
-                    <option value="36">36 кВт</option>
-                </select>
-            </div>
-            <div class="col-md-3 mb-2">
-                <select class="form-select" id="contour-filter">
-                    <option value="">Все контуры</option>
-                    <option value="Двухконтурный">Двухконтурные</option>
-                    <option value="Одноконтурный">Одноконтурные</option>
-                </select>
-            </div>
-            <div class="col-md-3 mb-2">
-                <select class="form-select" id="wifi-filter">
-                    <option value="">Все</option>
-                    <option value="Да">С Wi-Fi</option>
-                    <option value="Нет">Без Wi-Fi</option>
-                </select>
-            </div>
-            <div class="col-md-3 mb-2">
-                <select class="form-select" id="stock-filter">
-                    <option value="">Все</option>
-                    <option value="available">В наличии</option>
-                    <option value="outofstock">Под заказ</option>
-                </select>
+        <div class="filter-section">
+            <h5 class="mb-3 text-primary"><i class="bi bi-funnel"></i> Фильтры</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <select class="form-select" id="power-filter">
+                        <option value="">Все мощности</option>
+                        <option value="18">18 кВт</option>
+                        <option value="24">24 кВт</option>
+                        <option value="28">28 кВт</option>
+                        <option value="30">30 кВт</option>
+                        <option value="32">32 кВт</option>
+                        <option value="36">36 кВт</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="contour-filter">
+                        <option value="">Все контуры</option>
+                        <option value="Двухконтурный">Двухконтурные</option>
+                        <option value="Одноконтурный">Одноконтурные</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="wifi-filter">
+                        <option value="">Все</option>
+                        <option value="Да">С Wi-Fi</option>
+                        <option value="Нет">Без Wi-Fi</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="stock-filter">
+                        <option value="">Все</option>
+                        <option value="available">В наличии</option>
+                        <option value="outofstock">Под заказ</option>
+                    </select>
+                </div>
             </div>
         </div>
 
         <!-- Сортировка -->
-        <div class="row mb-3">
+        <div class="row mb-4">
             <div class="col-12">
-                <select class="form-select" id="sort-select" onchange="sortProducts()">
-                    <option value="stock-desc">Сначала в наличии</option>
-                    <option value="price-asc">Цена (по возрастанию)</option>
-                    <option value="price-desc">Цена (по убыванию)</option>
-                    <option value="name-asc">По названию (А-Я)</option>
-                    <option value="power-asc">Мощность (по возрастанию)</option>
-                </select>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted" id="product-count">Загрузка...</span>
+                    <select class="form-select w-auto" id="sort-select" onchange="sortProducts()">
+                        <option value="stock-desc">Сначала в наличии</option>
+                        <option value="price-asc">Цена (по возрастанию)</option>
+                        <option value="price-desc">Цена (по убыванию)</option>
+                        <option value="name-asc">По названию (А-Я)</option>
+                        <option value="power-asc">Мощность (по возрастанию)</option>
+                    </select>
+                </div>
             </div>
         </div>
 
         <!-- Товары -->
-        <div id="products-container" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3"></div>
+        <div id="products-container" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4"></div>
 
         <!-- Пагинация -->
-        <nav class="mt-4" id="pagination-container">
+        <nav class="mt-5" id="pagination-container">
             <ul class="pagination justify-content-center" id="pagination"></ul>
         </nav>
     </div>
+
+    <!-- Статистика внизу -->
+    <section class="stats-section">
+        <div class="container">
+            <h3 class="section-title">Общая статистика</h3>
+            <div class="row">
+                <div class="col-6 col-md-3 mb-4">
+                    <div class="stat-card" style="background: var(--gradient-primary);">
+                        <h4 id="total-products">0</h4>
+                        <p>Моделей</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 mb-4">
+                    <div class="stat-card" style="background: var(--gradient-success);">
+                        <h4 id="available-products">0</h4>
+                        <p>В наличии</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 mb-4">
+                    <div class="stat-card" style="background: var(--gradient-danger);">
+                        <h4 id="out-of-stock">0</h4>
+                        <p>Под заказ</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 mb-4">
+                    <div class="stat-card" style="background: var(--gradient-accent);">
+                        <h4 id="wifi-count">0</h4>
+                        <p>С Wi-Fi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -349,8 +432,6 @@
                               model.endsWith(' Н') || model.includes('(Н)')) {
                         product.Контуры = "Одноконтурный";
                     }
-                    // Если не нашли явных указаний, оставляем как было
-                    
                     return product;
                 });
                 
@@ -395,6 +476,8 @@
             document.getElementById('available-products').textContent = available;
             document.getElementById('out-of-stock').textContent = outOfStock;
             document.getElementById('wifi-count').textContent = wifiCount;
+            
+            document.getElementById('product-count').textContent = `Найдено ${filteredProducts.length} товаров`;
         }
 
         function filterProducts() {
@@ -419,15 +502,6 @@
             
             currentPage = 1;
             sortProducts();
-        }
-
-        function resetFilters() {
-            document.getElementById('search-input').value = '';
-            document.getElementById('power-filter').value = '';
-            document.getElementById('contour-filter').value = '';
-            document.getElementById('wifi-filter').value = '';
-            document.getElementById('stock-filter').value = '';
-            filterProducts();
         }
 
         function sortProducts() {
@@ -500,6 +574,8 @@
                     </div>
                 `;
             }).join('');
+            
+            updateStatistics();
         }
 
         function renderPagination() {
