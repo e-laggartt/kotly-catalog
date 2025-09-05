@@ -31,6 +31,10 @@ def main():
         print("\n=== ИНФОРМАЦИЯ О КОЛОНКАХ ===")
         print("Колонки в прайсе:", price_df.columns.tolist())
         print("Колонки в остатках:", stock_df.columns.tolist())
+        print("Первые строки прайса:")
+        print(price_df.head(3))
+        print("Первые строки остатков:")
+        print(stock_df.head(3))
         print("==============================\n")
         
         # ===== ОБРАБОТКА ПРАЙС-ЛИСТА =====
@@ -42,10 +46,11 @@ def main():
                 col_lower = str(col).lower()
                 if any(name.lower() in col_lower for name in possible_names):
                     return col
-            return df.columns[1] if len(df.columns) > 1 else df.columns[0]
+            return None
         
+        # Для прайса
         article_col = find_column(price_df, ['артикул', 'article', 'код', 'articul', 'sku'])
-        name_col = find_column(price_df, ['товар', 'наименование', 'модель', 'name', 'product', 'название', 'модель'])
+        name_col = find_column(price_df, ['товар', 'наименование', 'модель', 'name', 'product', 'название'])
         price_col = find_column(price_df, ['розничная', 'цена', 'price', 'retail', 'стоимость', 'руб'])
         
         print(f"Найдены колонки в прайсе: Артикул='{article_col}', Товар='{name_col}', Цена='{price_col}'")
@@ -54,13 +59,25 @@ def main():
         price_df = price_df[[article_col, name_col, price_col]].copy()
         price_df.columns = ['Артикул', 'Модель', 'Цена']
         
-        # Очистка данных
+        # Очистка данных прайса
         price_df = price_df.dropna(subset=['Артикул'])
         price_df['Артикул'] = price_df['Артикул'].astype(str).str.strip()
         price_df = price_df.drop_duplicates('Артикул')
         
-        # Преобразуем цену в число
-        price_df['Цена'] = pd.to_numeric(price_df['Цена'], errors='coerce').fillna(0)
+        # Преобразуем цену в число (исправляем форматирование)
+        def parse_price(price_str):
+            if pd.isna(price_str):
+                return 0.0
+            try:
+                # Убираем пробелы (тысячные разделители) и запятые (десятичные)
+                price_str = str(price_str).replace(' ', '').replace(',', '.')
+                # Убираем все нечисловые символы кроме точки и минуса
+                price_str = re.sub(r'[^\d\.\-]', '', price_str)
+                return float(price_str)
+            except:
+                return 0.0
+        
+        price_df['Цена'] = price_df['Цена'].apply(parse_price)
 
         # ===== ОБРАБОТКА ОСТАТКОВ =====
         print("Обрабатываем остатки...")
@@ -75,16 +92,42 @@ def main():
         stock_df = stock_df[[stock_article_col, stock_qty_col]].copy()
         stock_df.columns = ['Артикул', 'В_наличии']
         
-        # Очистка данных
+        # Очистка данных остатков
         stock_df = stock_df.dropna(subset=['Артикул'])
         stock_df['Артикул'] = stock_df['Артикул'].astype(str).str.strip()
         stock_df = stock_df.drop_duplicates('Артикул')
         
-        # Обработка отрицательных значений
-        stock_df['В_наличии'] = pd.to_numeric(stock_df['В_наличии'], errors='coerce').fillna(0)
-        stock_df['В_наличии'] = stock_df['В_наличии'].apply(lambda x: max(0, x) if pd.notnull(x) else 0)
-        stock_df['В_наличии'] = stock_df['В_наличии'].astype(int)
+        # Обработка количества
+        def parse_quantity(qty_str):
+            if pd.isna(qty_str):
+                return 0
+            try:
+                qty = float(str(qty_str).replace(' ', '').replace(',', '.'))
+                return max(0, int(qty))  # Отрицательные значения становятся 0
+            except:
+                return 0
+        
+        stock_df['В_наличии'] = stock_df['В_наличии'].apply(parse_quantity)
 
+        # ===== ОЧИСТКА И НОРМАЛИЗАЦИЯ АРТИКУЛОВ =====
+        print("Очищаем и нормализуем артикулы...")
+        
+        def clean_article(article):
+            """Очистка и нормализация артикула"""
+            if pd.isna(article):
+                return None
+            article = str(article).strip()
+            # Убираем .0 в конце (преобразование из float)
+            if article.endswith('.0'):
+                article = article[:-2]
+            # Убираем лишние пробелы и непечатаемые символы
+            article = re.sub(r'\s+', '', article)
+            return article
+        
+        # Применяем очистку к артикулам
+        price_df['Артикул_чистый'] = price_df['Артикул'].apply(clean_article)
+        stock_df['Артикул_чистый'] = stock_df['Артикул'].apply(clean_article)
+        
         # ===== ОТЛАДОЧНАЯ ИНФОРМАЦИЯ ПЕРЕД ОБЪЕДИНЕНИЕМ =====
         print("\n=== ДАННЫЕ ДЛЯ ОБЪЕДИНЕНИЯ ===")
         print(f"Записей в прайсе: {len(price_df)}")
@@ -92,64 +135,49 @@ def main():
         
         # Покажем примеры артикулов для сравнения
         print("Первые 10 артикулов из прайса:")
-        print(price_df['Артикул'].head(10).tolist())
+        print(price_df['Артикул_чистый'].head(10).tolist())
         
         print("Первые 10 артикулов из остатков:")
-        print(stock_df['Артикул'].head(10).tolist())
+        print(stock_df['Артикул_чистый'].head(10).tolist())
         
         # Проверим совпадение артикулов
-        common_articles = set(price_df['Артикул']).intersection(set(stock_df['Артикул']))
+        common_articles = set(price_df['Артикул_чистый']).intersection(set(stock_df['Артикул_чистый']))
         print(f"Общих артикулов: {len(common_articles)}")
         if common_articles:
             print("Пример общих артикулов:", list(common_articles)[:5])
+        else:
+            print("❌ НЕТ СОВПАДАЮЩИХ АРТИКУЛОВ!")
+            # Покажем различия
+            only_in_price = set(price_df['Артикул_чистый']) - set(stock_df['Артикул_чистый'])
+            only_in_stock = set(stock_df['Артикул_чистый']) - set(price_df['Артикул_чистый'])
+            print(f"Только в прайсе: {len(only_in_price)}")
+            print(f"Только в остатках: {len(only_in_stock)}")
+            if only_in_price:
+                print("Пример только в прайсе:", list(only_in_price)[:3])
+            if only_in_stock:
+                print("Пример только в остатках:", list(only_in_stock)[:3])
         print("==============================\n")
-
-        # ===== АВТОМАТИЧЕСКОЕ ИСПРАВЛЕНИЕ АРТИКУЛОВ =====
-        print("Пытаемся автоматически исправить артикулы...")
-        
-        def clean_article(article):
-            """Очистка и нормализация артикула"""
-            if pd.isna(article):
-                return None
-            article = str(article).strip()
-            # Удаляем лишние символы
-            article = re.sub(r'[^\w\d]', '', article)
-            # Убираем .0 в конце
-            article = re.sub(r'\.0$', '', article)
-            return article
-        
-        # Применяем очистку к артикулам
-        price_df['Артикул_чистый'] = price_df['Артикул'].apply(clean_article)
-        stock_df['Артикул_чистый'] = stock_df['Артикул'].apply(clean_article)
-        
-        # Проверяем после очистки
-        common_articles_clean = set(price_df['Артикул_чистый']).intersection(set(stock_df['Артикул_чистый']))
-        print(f"Общих артикулов после очистки: {len(common_articles_clean)}")
-        if common_articles_clean:
-            print("Пример общих артикулов после очистки:", list(common_articles_clean)[:5])
 
         # ===== ОБЪЕДИНЕНИЕ ДАННЫХ =====
         print("Объединяем данные...")
         
-        if len(common_articles_clean) > 0:
-            # Используем очищенные артикулы если есть совпадения
-            merged_df = pd.merge(
-                price_df, 
-                stock_df, 
-                left_on='Артикул_чистый', 
-                right_on='Артикул_чистый', 
-                how='left'
-            )
-            merged_df['Артикул'] = merged_df['Артикул_x']  # Используем оригинальный артикул из прайса
-        else:
-            # Если нет совпадений, используем outer join
-            print("⚠️ Нет совпадений артикулов, используем все данные")
-            merged_df = pd.merge(price_df, stock_df, on='Артикул', how='outer')
+        # Используем очищенные артикулы
+        merged_df = pd.merge(
+            price_df, 
+            stock_df, 
+            left_on='Артикул_чистый', 
+            right_on='Артикул_чистый', 
+            how='left',
+            suffixes=('_price', '_stock')
+        )
         
         # Заполняем пропущенные значения
         merged_df['В_наличии'] = merged_df['В_наличии'].fillna(0).astype(int)
         merged_df['Цена'] = merged_df['Цена'].fillna(0).astype(float)
         merged_df['Модель'] = merged_df['Модель'].fillna('Неизвестная модель')
+        
+        # Используем оригинальный артикул из прайса
+        merged_df['Артикул'] = merged_df['Артикул_price']
         
         # Убираем временные колонки
         merged_df = merged_df[['Артикул', 'Модель', 'Цена', 'В_наличии']]
@@ -172,8 +200,12 @@ def main():
         # Преобразуем в список словарей
         data_for_json = merged_df.to_dict('records')
         
-        # Убираем NaN значения и преобразуем типы
+        # Убираем .0 из артикулов и преобразуем типы
         for item in data_for_json:
+            # Исправляем артикулы (убираем .0)
+            if 'Артикул' in item and str(item['Артикул']).endswith('.0'):
+                item['Артикул'] = str(item['Артикул'])[:-2]
+            
             item['Цена'] = float(item['Цена']) if pd.notnull(item['Цена']) else 0.0
             item['В_наличии'] = int(item['В_наличии'])
 
@@ -186,6 +218,12 @@ def main():
         print(f"Обработано позиций: {len(data_for_json)}")
         print(f"В наличии: {len(merged_df[merged_df['В_наличии'] > 0])} позиций")
         print(f"Нет в наличии: {len(merged_df[merged_df['В_наличии'] == 0])} позиций")
+        
+        # Выводим пример данных для проверки
+        print("\nПример обработанных данных (первые 10 записей):")
+        for i, item in enumerate(data_for_json[:10]):
+            status = "✅" if item.get('В_наличии', 0) > 0 else "❌"
+            print(f"{status} {i+1}. {item.get('Артикул')} - {item.get('Модель', 'Нет названия')} - {item.get('Цена', 0):.2f} руб. - {item.get('В_наличии', 0)} шт.")
         
         # Также сохраняем Excel для отладки
         current_date = datetime.now().strftime('%Y-%m-%d')
@@ -205,12 +243,6 @@ def main():
             summary_df.to_excel(writer, sheet_name='Итоги', index=False)
         
         print(f"✅ {output_filename} также создан для отладки")
-        
-        # Выводим пример данных для проверки
-        print("\nПример обработанных данных (первые 10 записей):")
-        for i, item in enumerate(data_for_json[:10]):
-            status = "✅" if item.get('В_наличии', 0) > 0 else "❌"
-            print(f"{status} {i+1}. {item.get('Модель', 'Нет названия')} - {item.get('Цена', 0)} руб. - {item.get('В_наличии', 0)} шт.")
             
     except Exception as e:
         print(f"❌ Ошибка: {str(e)}")
@@ -227,43 +259,29 @@ def create_fallback_with_stock():
         {
             "Артикул": "10680202001",
             "Модель": "Котел настенный Meteor B20 18 C", 
-            "Цена": 37848,
-            "В_наличии": 5,
+            "Цена": 37848.0,
+            "В_наличии": 3,
             "Статус": "В наличии"
         },
         {
             "Артикул": "10680203005",
             "Модель": "Котел настенный Meteor B20 24 C",
-            "Цена": 39176,
-            "В_наличии": 3,
+            "Цена": 39176.0,
+            "В_наличии": 134,
             "Статус": "В наличии"
         },
         {
             "Артикул": "8732304313",
             "Модель": "Котел настенный LaggarTT ГАЗ 6000 24 С",
-            "Цена": 60714,
-            "В_наличии": 8,
+            "Цена": 60714.0,
+            "В_наличии": 401,
             "Статус": "В наличии"
-        },
-        {
-            "Артикул": "10680204002",
-            "Модель": "Котел настенный Meteor B30 28 C",
-            "Цена": 59511,
-            "В_наличии": 2,
-            "Статус": "В наличии"
-        },
-        {
-            "Артикул": "10680502001",
-            "Модель": "Котел настенный Meteor B30 18 H",
-            "Цена": 45899,
-            "В_наличии": 0,
-            "Статус": "Нет в наличии"
         }
     ]
     
     with open('data.json', 'w', encoding='utf-8') as f:
         json.dump(fallback_data, f, ensure_ascii=False, indent=2)
-    print("✅ Создан data.json с тестовыми данными (в наличии: 4 товара)")
+    print("✅ Создан data.json с тестовыми данными")
 
 if __name__ == "__main__":
     main()
