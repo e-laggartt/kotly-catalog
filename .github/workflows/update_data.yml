@@ -36,54 +36,33 @@ jobs:
       - name: Run processing script
         run: |
           echo "Запускаем скрипт обработки данных из Google Таблиц..."
-          python scripts/process_data.py
+          python process_data.py
 
       # Шаг 5: Проверяем созданные файлы
       - name: Verify generated files
         run: |
           echo "Проверяем созданные файлы:"
-          ls -la *.json *.xlsx 2>/dev/null || echo "Файлы не найдены"
+          ls -la *.json 2>/dev/null || echo "Файлы не найдены"
           
-          # Проверяем data.json
           if [ -f "data.json" ]; then
             echo "✅ data.json создан успешно"
-            echo "Размер файла: $(wc -l < data.json) строк"
             record_count=$(grep -c '"Артикул"' data.json || echo "0")
+            available_count=$(grep -c '"В_наличии": [1-9][0-9]*' data.json || echo "0")
             echo "Количество записей: $record_count"
-            echo "Первые 2 записи:"
-            head -n 10 data.json | grep -A 8 -B 2 '"Артикул"' || echo "Не удалось показать примеры"
+            echo "Товаров в наличии: $available_count"
           else
             echo "❌ data.json не создан!"
             exit 1
-          fi
-          
-          # Проверяем Excel файлы
-          if ls Сводная_таблица_котлы_*.xlsx 1> /dev/null 2>&1; then
-            echo "✅ Excel файл создан успешно"
-          else
-            echo "⚠️ Excel файл не создан (не критично)"
           fi
 
       # Шаг 6: Коммитим и пушим изменения
       - name: Commit and push changes
         run: |
-          # Настраиваем git
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
-          # Добавляем только нужные файлы
           git add data.json
           
-          # Пытаемся добавить Excel файлы (если есть)
-          if ls Сводная_таблица_котлы_*.xlsx 1> /dev/null 2>&1; then
-            git add Сводная_таблица_котлы_*.xlsx
-          fi
-          
-          # Проверяем статус
-          echo "Текущий статус git:"
-          git status
-          
-          # Коммитим и пушим если есть изменения
           if ! git diff --staged --quiet; then
             git commit -m "Auto-update: данные обновлены из Google Таблиц [skip ci]"
             git push
@@ -92,38 +71,19 @@ jobs:
             echo "ℹ️ Изменений нет, пропускаем коммит"
           fi
 
-      # Шаг 7: Очищаем старые файлы (опционально)
-      - name: Cleanup old Excel files
-        run: |
-          # Удаляем старые Excel файлы (оставляем только последние 3)
-          if ls Сводная_таблица_котлы_*.xlsx 1> /dev/null 2>&1; then
-            echo "Очищаем старые Excel файлы..."
-            ls -t Сводная_таблица_котлы_*.xlsx | tail -n +4 | xargs rm -f 2>/dev/null || true
-            echo "Оставшиеся файлы:"
-            ls -la Сводная_таблица_котлы_*.xlsx 2>/dev/null || echo "Excel файлов нет"
-          else
-            echo "Нет Excel файлов для очистки"
-          fi
-
-      # Шаг 8: Финальная проверка (исправленная)
+      # Шаг 7: Финальная проверка
       - name: Final check
         run: |
           echo "=== ФИНАЛЬНАЯ ПРОВЕРКА ==="
           echo "Время завершения: $(date)"
           
           if [ -f "data.json" ]; then
-            # Безопасный подсчет записей
             record_count=$(grep -c '"Артикул"' data.json || echo "0")
             available_count=$(grep -c '"В_наличии": [1-9][0-9]*' data.json || echo "0")
             
             echo "Статус: ✅ Workflow выполнен успешно"
             echo "Обработано записей: $record_count"
             echo "Товаров в наличии: $available_count"
-            echo "Последние артикулы:"
-            grep '"Артикул"' data.json | tail -3 || echo "Не удалось показать артикулы"
           else
             echo "Статус: ⚠️ Workflow завершен, но data.json не создан"
-            echo "Проверьте логи скрипта выше"
           fi
-          
-          echo "================================="
