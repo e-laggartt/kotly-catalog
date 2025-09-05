@@ -32,9 +32,9 @@ def main():
         print("Колонки в прайсе:", price_df.columns.tolist())
         print("Колонки в остатках:", stock_df.columns.tolist())
         print("Первые 3 строки прайса:")
-        print(price_df.head(3).to_string())
+        print(price_df.head(3))
         print("\nПервые 3 строки остатков:")
-        print(stock_df.head(3).to_string())
+        print(stock_df.head(3))
         print("==============================\n")
         
         # ===== ОБРАБОТКА ПРАЙС-ЛИСТА =====
@@ -54,6 +54,9 @@ def main():
         price_col = find_column(price_df, ['розничная', 'цена', 'price', 'retail', 'стоимость', 'руб'])
         
         print(f"Найдены колонки в прайсе: Артикул='{article_col}', Товар='{name_col}', Цена='{price_col}'")
+        
+        if not all([article_col, name_col, price_col]):
+            raise ValueError("Не найдены все необходимые колонки в прайсе")
         
         # Создаем копию только с нужными колонками
         price_df = price_df[[article_col, name_col, price_col]].copy()
@@ -87,6 +90,9 @@ def main():
         stock_qty_col = find_column(stock_df, ['в наличии', 'остаток', 'количество', 'quantity', 'stock', 'наличие', 'кол-во'])
         
         print(f"Найдены колонки в остатках: Артикул='{stock_article_col}', Наличие='{stock_qty_col}'")
+        
+        if not all([stock_article_col, stock_qty_col]):
+            raise ValueError("Не найдены все необходимые колонки в остатках")
         
         # Создаем копию только с нужными колонками
         stock_df = stock_df[[stock_article_col, stock_qty_col]].copy()
@@ -222,7 +228,7 @@ def main():
         import traceback
         traceback.print_exc()
         
-        # В случае ошибки создаем пустой файл, но не резервные данные
+        # В случае ошибки создаем пустой файл
         print("Создаем пустой data.json для избежания ошибок на сайте...")
         with open('data.json', 'w', encoding='utf-8') as f:
             json.dump([], f, ensure_ascii=False, indent=2)
