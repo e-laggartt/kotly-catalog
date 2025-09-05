@@ -3,13 +3,13 @@ import numpy as np
 from datetime import datetime
 import json
 import requests
+from io import BytesIO
 
 def main():
     try:
         print("Начинаем обработку данных...")
         
         # ===== НАСТРОЙКА GOOGLE SHEETS =====
-        # ЗАМЕНИТЕ ЭТИ ID НА ВАШИ!
         PRICE_SHEET_ID = "19PRNpA6F_HMI6iHSCg2iJF52PnN203ckY1WnqY_t5fc"
         STOCK_SHEET_ID = "1o0e3-E20mQsWToYVQpCHZgLcbizCafLRpoPdxr8Rqfw"
         
@@ -26,6 +26,12 @@ def main():
         print("Загружаем данные остатков...")
         stock_df = pd.read_csv(stock_csv_url)
         
+        # ===== ОТЛАДОЧНАЯ ИНФОРМАЦИЯ О КОЛОНКАХ =====
+        print("\n=== ИНФОРМАЦИЯ О КОЛОНКАХ ===")
+        print("Колонки в прайсе:", price_df.columns.tolist())
+        print("Колонки в остатках:", stock_df.columns.tolist())
+        print("==============================\n")
+        
         # ===== ОБРАБОТКА ПРАЙС-ЛИСТА =====
         print("Обрабатываем прайс-лист...")
         
@@ -35,14 +41,15 @@ def main():
                 col_lower = str(col).lower()
                 if any(name.lower() in col_lower for name in possible_names):
                     return col
-            return df.columns[1]  # Вторая колонка если не нашли
+            return df.columns[1] if len(df.columns) > 1 else df.columns[0]
         
-        article_col = find_column(price_df, ['артикул', 'article', 'код'])
-        name_col = find_column(price_df, ['товар', 'наименование', 'модель', 'name', 'product'])
-        price_col = find_column(price_df, ['розничная', 'цена', 'price', 'retail'])
+        article_col = find_column(price_df, ['артикул', 'article', 'код', 'articul'])
+        name_col = find_column(price_df, ['товар', 'наименование', 'модель', 'name', 'product', 'название'])
+        price_col = find_column(price_df, ['розничная', 'цена', 'price', 'retail', 'стоимость'])
         
-        print(f"Найдены колонки в прайсе: Артикул={article_col}, Товар={name_col}, Цена={price_col}")
+        print(f"Найдены колонки в прайсе: Артикул='{article_col}', Товар='{name_col}', Цена='{price_col}'")
         
+        # Создаем копию только с нужными колонками
         price_df = price_df[[article_col, name_col, price_col]].copy()
         price_df.columns = ['Артикул', 'Модель', 'Цена']
         
@@ -58,27 +65,43 @@ def main():
         print("Обрабатываем остатки...")
         
         # Находим колонки в остатках
-        stock_article_col = find_column(stock_df, ['артикул', 'article', 'код'])
-        stock_qty_col = find_column(stock_df, ['в наличии', 'остаток', 'количество', 'quantity', 'stock'])
+        stock_article_col = find_column(stock_df, ['артикул', 'article', 'код', 'articul'])
+        stock_qty_col = find_column(stock_df, ['в наличии', 'остаток', 'количество', 'quantity', 'stock', 'наличие'])
         
-        print(f"Найдены колонки в остатках: Артикул={stock_article_col}, Наличие={stock_qty_col}")
+        print(f"Найдены колонки в остатках: Артикул='{stock_article_col}', Наличие='{stock_qty_col}'")
         
-        # Фильтруем только строки с артикулами
-        stock_df = stock_df[stock_df[stock_article_col].astype(str).str.contains(r'^\d', na=False)]
-        stock_df['Артикул'] = stock_df[stock_article_col].astype(str).str.strip()
+        # Создаем копию только с нужными колонками
+        stock_df = stock_df[[stock_article_col, stock_qty_col]].copy()
+        stock_df.columns = ['Артикул', 'В_наличии']
         
-        stock_df = stock_df.rename(columns={stock_qty_col: 'В_наличии'})
-        stock_df = stock_df[['Артикул', 'В_наличии']]
+        # Очистка данных
+        stock_df = stock_df.dropna(subset=['Артикул'])
+        stock_df['Артикул'] = stock_df['Артикул'].astype(str).str.strip()
+        stock_df = stock_df.drop_duplicates('Артикул')
         
-        # Очистка и обработка отрицательных значений
+        # Обработка отрицательных значений
         stock_df['В_наличии'] = pd.to_numeric(stock_df['В_наличии'], errors='coerce').fillna(0)
         stock_df['В_наличии'] = stock_df['В_наличии'].apply(lambda x: max(0, x) if pd.notnull(x) else 0)
         stock_df['В_наличии'] = stock_df['В_наличии'].astype(int)
 
         # ===== ОБЪЕДИНЕНИЕ ДАННЫХ =====
         print("Объединяем данные...")
-        merged_df = pd.merge(price_df, stock_df, on='Артикул', how='left')
+        
+        # Отладочная информация перед объединением
+        print(f"Записей в прайсе: {len(price_df)}")
+        print(f"Записей в остатках: {len(stock_df)}")
+        print("Примеры артикулов из прайса:", price_df['Артикул'].head(5).tolist())
+        print("Примеры артикулов из остатков:", stock_df['Артикул'].head(5).tolist())
+        
+        # Объединяем все возможные артикулы
+        merged_df = pd.merge(price_df, stock_df, on='Артикул', how='outer')
+        
+        # Заполняем пропущенные значения
         merged_df['В_наличии'] = merged_df['В_наличии'].fillna(0).astype(int)
+        merged_df['Цена'] = merged_df['Цена'].fillna(0).astype(float)
+        merged_df['Модель'] = merged_df['Модель'].fillna('Неизвестная модель')
+        
+        print(f"После объединения: {len(merged_df)} записей")
 
         # Добавляем колонку "Статус наличия"
         def get_stock_status(row):
@@ -109,6 +132,8 @@ def main():
         
         print("✅ data.json успешно создан!")
         print(f"Обработано позиций: {len(data_for_json)}")
+        print(f"В наличии: {len(merged_df[merged_df['В_наличии'] > 0])} позиций")
+        print(f"Нет в наличии: {len(merged_df[merged_df['В_наличии'] == 0])} позиций")
         
         # Также сохраняем Excel для отладки
         current_date = datetime.now().strftime('%Y-%m-%d')
@@ -130,8 +155,8 @@ def main():
         print(f"✅ {output_filename} также создан для отладки")
         
         # Выводим пример данных для проверки
-        print("\nПример обработанных данных (первые 3 записи):")
-        for i, item in enumerate(data_for_json[:3]):
+        print("\nПример обработанных данных (первые 5 записей):")
+        for i, item in enumerate(data_for_json[:5]):
             print(f"{i+1}. {item.get('Модель', 'Нет названия')} - {item.get('Цена', 0)} руб. - {item.get('В_наличии', 0)} шт. - {item.get('Статус', 'Неизвестно')}")
             
     except Exception as e:
@@ -152,12 +177,26 @@ def create_fallback_data():
             "Цена": 37848,
             "В_наличии": 3,
             "Статус": "В наличии"
+        },
+        {
+            "Артикул": "10680203005",
+            "Модель": "Котел настенный Meteor B20 24 C",
+            "Цена": 39176,
+            "В_наличии": 0,
+            "Статус": "Нет в наличии"
+        },
+        {
+            "Артикул": "8732304313",
+            "Модель": "Котел настенный LaggarTT ГАЗ 6000 24 С",
+            "Цена": 60714,
+            "В_наличии": 5,
+            "Статус": "В наличии"
         }
     ]
     
     with open('data.json', 'w', encoding='utf-8') as f:
         json.dump(fallback_data, f, ensure_ascii=False, indent=2)
-    print("✅ Создан временный data.json")
+    print("✅ Создан временный data.json с тестовыми данными")
 
 if __name__ == "__main__":
     main()
