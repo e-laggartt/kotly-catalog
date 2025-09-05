@@ -27,15 +27,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pandas openpyxl xlrd requests  # ← ВАЖНО: добавлен requests
+          pip install pandas openpyxl xlrd requests
 
-      - name: Debug - Check files
+      - name: Debug - Check network connectivity
         run: |
-          echo "Текущая директория:"
-          pwd
-          echo "Содержимое папки data:"
-          ls -la data/
-          echo "Проверяем доступность внешних URL:"
+          echo "Проверяем доступность внешних ресурсов..."
+          ping -c 3 b24.engpx.ru || echo "Ping тест не прошел"
           curl -I "https://b24.engpx.ru/~1PZm1" || echo "Прайс недоступен"
           curl -I "https://b24.engpx.ru/~8G8gh" || echo "Наличие недоступно"
 
@@ -44,11 +41,45 @@ jobs:
           echo "Запускаем скрипт обработки..."
           python scripts/process_data.py
 
+      - name: Verify generated files
+        run: |
+          echo "Проверяем созданные файлы:"
+          ls -la *.json *.xlsx 2>/dev/null || echo "Файлы не найдены"
+          
+          if [ -f "data.json" ]; then
+            echo "data.json существует, проверяем содержимое:"
+            head -n 5 data.json
+            echo "..."
+            tail -n 2 data.json
+          else
+            echo "❌ data.json не создан!"
+            exit 1
+          fi
+
       - name: Commit and push changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+          
+          # Добавляем только нужные файлы
           git add data.json
-          git add Сводная_таблица_котлы_*.xlsx
+          git add Сводная_таблица_котлы_*.xlsx 2>/dev/null || echo "Excel файлы не найдены"
+          
+          # Проверяем изменения
           git status
-          git diff --staged --quiet || (git commit -m "Auto-update data from external sources [skip ci]" && git push)
+          
+          # Коммитим и пушим если есть изменения
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto-update: данные обновлены из внешних источников [skip ci]"
+            git push
+            echo "✅ Изменения запушены"
+          else
+            echo "ℹ️ Изменений нет, пропускаем коммит"
+          fi
+
+      - name: Cleanup old files
+        run: |
+          # Удаляем старые Excel файлы (оставляем только последние 5)
+          ls -t Сводная_таблица_котлы_*.xlsx 2>/dev/null | tail -n +6 | xargs rm -f 2>/dev/null || echo "Нет файлов для очистки"
+          echo "Оставшиеся файлы:"
+          ls -la *.xlsx 2>/dev/null || echo "Excel файлов нет"
