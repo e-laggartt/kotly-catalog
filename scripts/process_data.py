@@ -31,12 +31,11 @@ def main():
         
         # ===== ОБРАБОТКА ДАННЫХ =====
         print("Обрабатываем данные...")
-        price_df = pd.read_excel(price_file, sheet_name='Прайс-лист')
-        stock_df = pd.read_excel(stock_file, sheet_name='Лист_1')
-
-        # Дальше ваш существующий код обработки...
-        # [ОСТАВЬТЕ ВСЮ ОСТАЛЬНУЮ ЛОГИКУ БЕЗ ИЗМЕНЕНИЙ]
         
+        # Чтение Excel файлов с явным указанием движка
+        price_df = pd.read_excel(price_file, sheet_name='Прайс-лист', engine='openpyxl')
+        stock_df = pd.read_excel(stock_file, sheet_name='Лист_1', engine='openpyxl')
+
         # ===== ОБРАБОТКА ПРАЙС-ЛИСТА =====
         print("Обрабатываем прайс-лист...")
         price_df = price_df[['Артикул', 'Товар', 'Розничная']].copy()
@@ -120,8 +119,23 @@ def main():
         
         print(f"✅ {output_filename} также создан для отладки")
         
+        # Выводим пример данных для проверки
+        print("\nПример обработанных данных (первые 3 записи):")
+        for i, item in enumerate(data_for_json[:3]):
+            print(f"{i+1}. {item['Модель']} - {item['Цена']} руб. - {item['В_наличии']} шт.")
+            
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Ошибка загрузки файлов: {e}")
+        print("Проверьте URL адреса и доступность файлов")
+        raise
+        
+    except pd.errors.EmptyDataError as e:
+        print(f"❌ Ошибка: файлы пустые или не содержат данных: {e}")
+        raise
+        
     except Exception as e:
-        print(f"❌ Ошибка: {str(e)}")
+        print(f"❌ Неожиданная ошибка: {str(e)}")
+        print("Тип ошибки:", type(e).__name__)
         raise
 
 if __name__ == "__main__":
