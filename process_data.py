@@ -10,8 +10,6 @@ def main():
         price_url = "https://docs.google.com/spreadsheets/d/19PRNpA6F_HMI6iHSCg2iJF52PnN203ckY1WnqY_t5fc/export?format=csv"
         stock_url = "https://docs.google.com/spreadsheets/d/1o0e3-E20mQsWToYVQpCHZgLcbizCafLRpoPdxr8Rqfw/export?format=csv"
         
-        print("✅ Используем Google Sheets, а не локальные файлы")
-        
         # Загружаем данные
         print("Загружаем прайс...")
         price_df = pd.read_csv(price_url)
@@ -91,26 +89,69 @@ def main():
         merged_df = pd.merge(price_clean, stock_clean, on='Артикул', how='left')
         merged_df['В_наличии'] = merged_df['В_наличии'].fillna(0).astype(int)
         
+        # Функция для определения фото по модели
+        def get_image_for_model(model_name):
+            """Определяет какое фото использовать для модели"""
+            model = str(model_name).upper()
+            
+            # Правила сопоставления моделей с фото
+            if 'METEOR T2' in model:
+                return 'images/METEOR_T2.jpg'
+            elif 'METEOR C30' in model:
+                return 'images/METEOR_C30.jpg'
+            elif 'METEOR B30' in model:
+                return 'images/METEOR_B30.jpg'
+            elif 'METEOR B20' in model:
+                return 'images/METEOR_B20.jpg'
+            elif 'METEOR C11' in model:
+                return 'images/METEOR_C11.jpg'
+            elif 'METEOR Q3' in model:
+                return 'images/METEOR_Q3.jpg'
+            elif 'METEOR M30' in model:
+                return 'images/METEOR_M30.jpg'
+            elif 'METEOR M6' in model:
+                return 'images/METEOR_M6.jpg'
+            elif 'LAGGARTT' in model or 'ГАЗ 6000' in model:
+                return 'images/LaggarTT.jpg'
+            elif 'DEVOTION' in model:
+                return 'images/Devotion.jpg'
+            elif 'MK' in model:
+                return 'images/MK.jpg'
+            else:
+                return 'images/default.jpg'
+        
         # Добавляем дополнительные поля
         def extract_info(model):
             model_str = str(model).upper()
             
-            # Мощность
+            # Мощность (ищем числа)
             power_match = re.search(r'(\d+)\s*(кВт|KW|C|H|С|Х)', model_str)
             power = power_match.group(1) if power_match else "Не указана"
             
-            # Контуры
-            contours = "Двухконтурный" if ' C' in model_str or 'С ' in model_str else "Одноконтурный"
+            # Контуры - ИСПРАВЛЕНО: "C" - двухконтурный, "H" - одноконтурный
+            if ' C' in model_str or 'С ' in model_str:
+                contours = "Двухконтурный"
+            elif ' H' in model_str or 'Н ' in model_str:
+                contours = "Одноконтурный"
+            else:
+                # Для напольных котлов и других определяем по контексту
+                if 'НАПОЛЬНЫЙ' in model_str or 'MK' in model_str:
+                    contours = "Одноконтурный"
+                else:
+                    contours = "Двухконтурный"  # по умолчанию для настенных
             
             # Wi-Fi
             wifi = "Да" if any(x in model_str for x in ['WI-FI', 'WIFI', 'ВАЙ-ФАЙ', 'WI FI']) else "Нет"
             
             return power, contours, wifi
         
-        # Применяем функцию к каждой модели
+        # Применяем функции к каждой модели
         merged_df[['Мощность', 'Контуры', 'WiFi']] = merged_df['Модель'].apply(
             lambda x: pd.Series(extract_info(x))
         )
+        
+        # Добавляем фото
+        merged_df['Фото'] = merged_df['Модель'].apply(get_image_for_model)
         
         # Добавляем статус
         merged_df['Статус'] = merged_df['В_наличии'].apply(lambda x: 'В наличии' if x > 0 else 'Нет в наличии')
@@ -128,7 +169,10 @@ def main():
         # Покажем пример данных
         print("\nПример данных (первые 3 товара):")
         for i, item in enumerate(result[:3]):
-            print(f"{i+1}. {item['Артикул']} - {item['Модель'][:30]}... - {item['Цена']} руб. - {item['В_наличии']} шт.")
+            print(f"{i+1}. {item['Артикул']} - {item['Модель'][:30]}...")
+            print(f"   Цена: {item['Цена']} руб., Наличие: {item['В_наличии']} шт.")
+            print(f"   Контуры: {item['Контуры']}, Мощность: {item['Мощность']} кВт, Wi-Fi: {item['WiFi']}")
+            print(f"   Фото: {item['Фото']}")
             
     except Exception as e:
         print(f"❌ Ошибка: {e}")
