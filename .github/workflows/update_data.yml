@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pandas requests
+          pip install pandas requests openpyxl
 
       # Шаг 4: Запускаем скрипт обработки данных
       - name: Run processing script
@@ -48,8 +48,9 @@ jobs:
           if [ -f "data.json" ]; then
             echo "✅ data.json создан успешно"
             echo "Размер файла: $(wc -l < data.json) строк"
-            echo "Первые 3 записи:"
-            head -n 10 data.json | grep -E '("Артикул|"Модель|"Цена)' || head -n 5 data.json
+            echo "Количество записей: $(grep -c '"Артикул"' data.json)"
+            echo "Первые 2 записи:"
+            head -n 10 data.json | grep -A 8 -B 2 '"Артикул"'
           else
             echo "❌ data.json не создан!"
             exit 1
@@ -108,5 +109,12 @@ jobs:
         run: |
           echo "=== ФИНАЛЬНАЯ ПРОВЕРКА ==="
           echo "Время завершения: $(date)"
-          echo "Статус: ✅ Workflow выполнен успешно"
-          echo "Данные обновлены и доступны на сайте"
+          if [ -f "data.json" ]; then
+            record_count=$(grep -c '"Артикул"' data.json)
+            available_count=$(grep -c '"В_наличии": [1-9]' data.json)
+            echo "Статус: ✅ Workflow выполнен успешно"
+            echo "Обработано записей: $record_count"
+            echo "Товаров в наличии: $available_count"
+          else
+            echo "Статус: ⚠️ Workflow завершен, но data.json не создан"
+          fi
