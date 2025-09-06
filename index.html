@@ -13,7 +13,8 @@
             --secondary: #64748b;
             --accent: #f59e0b;
             --success: #10b981;
-            --danger: #ef4444;
+            --danger: #dc2626;
+            --danger-light: #ef4444;
             --light-bg: #f8fafc;
             --card-bg: #ffffff;
             --text-primary: #1e293b;
@@ -21,7 +22,7 @@
             --gradient-primary: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             --gradient-accent: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
             --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            --gradient-danger: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
             --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
             --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
@@ -126,6 +127,7 @@
         .badge.bg-primary { background: var(--gradient-primary) !important; }
         .badge.bg-secondary { background: var(--secondary) !important; }
         .badge.bg-success { background: var(--gradient-success) !important; }
+        .badge.bg-danger { background: var(--gradient-danger) !important; }
         .badge.bg-warning { background: var(--gradient-accent) !important; color: white !important; }
 
         .price-section {
@@ -150,7 +152,7 @@
 
         .discount-price {
             font-weight: 700;
-            color: var(--danger);
+            color: var(--danger-light);
             font-size: 1.3em;
         }
 
@@ -166,52 +168,7 @@
         }
 
         .in-stock { color: var(--success); }
-        .out-of-stock { color: var(--danger); }
-
-        .stat-card {
-            background: var(--gradient-primary);
-            color: white;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow-sm);
-            transition: transform 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .stat-card h4 {
-            font-weight: 700;
-            margin-bottom: 4px;
-            font-size: 2rem;
-        }
-
-        .stat-card p {
-            margin-bottom: 0;
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-
-        .filter-section {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 24px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .discount-section {
-            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            margin-bottom: 24px;
-            border: 1px solid #fcd34d;
-            box-shadow: var(--shadow-sm);
-        }
+        .out-of-stock { color: var(--danger-light); }
 
         .btn-primary {
             background: var(--gradient-primary);
@@ -325,7 +282,6 @@
             color: white;
             border: none;
             border-radius: 8px;
-            margin-bottom: 15px;
         }
         .accordion-button:hover {
             background: var(--primary-dark);
@@ -336,6 +292,36 @@
         .accordion-body {
             overflow: hidden;
             transition: max-height 0.3s ease-out, opacity 0.3s ease;
+        }
+
+        .accordion-section {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .accordion-section.collapsed {
+            padding: 12px 20px;
+        }
+
+        /* Стили для поля количества в карточке товара */
+        .product-quantity {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 10px;
+        }
+
+        .product-quantity-input {
+            width: 60px;
+            text-align: center;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 5px;
         }
 
         /* Адаптивность */
@@ -358,19 +344,7 @@
                 height: 32px;
             }
             
-            .stat-card {
-                padding: 16px;
-            }
-            
-            .stat-card h4 {
-                font-size: 1.5rem;
-            }
-            
-            .current-price {
-                font-size: 1.1rem;
-            }
-            
-            .filter-section, .discount-section {
+            .accordion-section {
                 padding: 16px;
             }
             /* На мобильных скрываем аккордеоны по умолчанию */
@@ -408,21 +382,6 @@
             animation: fadeIn 0.4s ease-out;
         }
 
-        /* Статистика внизу */
-        .stats-section {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            padding: 40px 0;
-            margin-top: 40px;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .section-title {
-            color: var(--text-primary);
-            font-weight: 700;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
         /* Улучшенный поиск */
         .search-container {
             background: var(--card-bg);
@@ -451,9 +410,6 @@
                     <i class="bi bi-cart3"></i>
                     <span class="cart-badge" id="cart-badge">0</span>
                 </button>
-                <span class="navbar-text small ms-3">
-                    <i class="bi bi-arrow-repeat"></i> <span id="last-update">-</span>
-                </span>
             </div>
         </div>
     </nav>
@@ -465,18 +421,17 @@
             <div class="row">
                 <div class="col-12">
                     <div class="input-group">
-                        <span class="input-group-text bg-primary text-white"><i class="bi bi-search"></i></span>
                         <input type="text" class="form-control" id="search-input" placeholder="Поиск по названию или артикулу..." onkeypress="if(event.key==='Enter')filterProducts()">
                         <button class="btn btn-primary" onclick="filterProducts()">
-                            <i class="bi bi-search"></i> Найти
+                            Найти
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Секция скидок (МОДИФИЦИРОВАНО - добавлен аккордеон) -->
-        <div class="discount-section">
+        <!-- Секция скидок -->
+        <div class="accordion-section" id="discount-section">
             <!-- Кнопка-аккордеон для мобильных -->
             <button type="button" class="accordion-button d-md-none" id="discount-accordion-button" onclick="toggleDiscounts()">
                 <span><i class="bi bi-percent"></i> Расчет скидки</span>
@@ -500,7 +455,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="show-original" 
+                            <input class="form-check-input" type="checkbox" id="show-original" checked
                                    onchange="toggleOriginalPrices()">
                             <label class="form-check-label" for="show-original">
                                 Показывать оригинальные цены
@@ -518,8 +473,8 @@
         </div>
 
         <!-- Фильтры -->
-        <div class="filter-section">
-            <!-- Кнопка-аккордеон для мобильных -->
+        <div class="accordion-section" id="filter-section">
+            <!-- Кнопка-аккорdeон для мобильных -->
             <button type="button" class="accordion-button d-md-none" id="filter-accordion-button" onclick="toggleFilters()">
                 <span><i class="bi bi-funnel"></i> Фильтры</span>
                 <i class="bi bi-chevron-up"></i>
@@ -584,11 +539,6 @@
 
         <!-- Товары -->
         <div id="products-container" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4"></div>
-
-        <!-- Пагинация -->
-        <nav class="mt-5" id="pagination-container">
-            <ul class="pagination justify-content-center" id="pagination"></ul>
-        </nav>
     </div>
 
     <!-- Корзина -->
@@ -642,59 +592,30 @@
         </div>
     </div>
 
-    <!-- Статистика внизу -->
-    <section class="stats-section">
-        <div class="container">
-            <h3 class="section-title">Общая статистика</h3>
-            <div class="row">
-                <div class="col-6 col-md-3 mb-4">
-                    <div class="stat-card" style="background: var(--gradient-primary);">
-                        <h4 id="total-products">0</h4>
-                        <p>Моделей</p>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3 mb-4">
-                    <div class="stat-card" style="background: var(--gradient-success);">
-                        <h4 id="available-products">0</h4>
-                        <p>В наличии</p>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3 mb-4">
-                    <div class="stat-card" style="background: var(--gradient-danger);">
-                        <h4 id="out-of-stock">0</h4>
-                        <p>Под заказ</p>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3 mb-4">
-                    <div class="stat-card" style="background: var(--gradient-accent);">
-                        <h4 id="wifi-count">0</h4>
-                        <p>С Wi-Fi</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let allProducts = [];
         let filteredProducts = [];
         let currentPage = 1;
-        const productsPerPage = 12;
+        const productsPerPage = 1000; // Все товары на одной странице
         let currentDiscount = 0;
-        let showOriginalPrices = false;
+        let showOriginalPrices = true; // По умолчанию включено
         let cart = [];
 
         // Функция для переключения видимости фильтров
         function toggleFilters() {
             const accordionBody = document.getElementById('filter-accordion-body');
+            const accordionSection = document.getElementById('filter-section');
             accordionBody.classList.toggle('show');
+            accordionSection.classList.toggle('collapsed');
         }
 
-        // Новая функция для переключения видимости скидок
+        // Функция для переключения видимости скидок
         function toggleDiscounts() {
             const accordionBody = document.getElementById('discount-accordion-body');
+            const accordionSection = document.getElementById('discount-section');
             accordionBody.classList.toggle('show');
+            accordionSection.classList.toggle('collapsed');
         }
 
         async function loadData() {
@@ -722,7 +643,6 @@
                     return product;
                 });
                 
-                document.getElementById('last-update').textContent = new Date().toLocaleTimeString('ru-RU');
                 updateStatistics();
                 filterProducts();
                 showLoading(false);
@@ -756,13 +676,6 @@
         function updateStatistics() {
             const total = allProducts.length;
             const available = allProducts.filter(p => p.В_наличии > 0).length;
-            const outOfStock = total - available;
-            const wifiCount = allProducts.filter(p => p.WiFi === 'Да').length;
-            
-            document.getElementById('total-products').textContent = total;
-            document.getElementById('available-products').textContent = available;
-            document.getElementById('out-of-stock').textContent = outOfStock;
-            document.getElementById('wifi-count').textContent = wifiCount;
             
             document.getElementById('product-count').textContent = `Найдено ${filteredProducts.length} товаров`;
         }
@@ -832,7 +745,6 @@
             });
             
             renderProducts();
-            renderPagination();
         }
 
         function renderProducts() {
@@ -849,11 +761,8 @@
                         </div>
                     </div>
                 `;
-                document.getElementById('pagination-container').style.display = 'none';
                 return;
             }
-            
-            document.getElementById('pagination-container').style.display = 'block';
             
             container.innerHTML = productsToShow.map(product => {
                 const discountPrice = calculateDiscountPrice(product.Цена, currentDiscount);
@@ -872,7 +781,9 @@
                                 
                                 <div class="mb-2">
                                     <span class="badge bg-primary">${product.Мощность} кВт</span>
-                                    <span class="badge bg-secondary">${product.Контуры}</span>
+                                    ${product.Контуры === 'Двухконтурный' ? 
+                                        '<span class="badge bg-danger">Двухконтурный</span>' : 
+                                        '<span class="badge bg-secondary">Одноконтурный</span>'}
                                     ${product.WiFi === 'Да' ? '<span class="badge bg-success">Wi-Fi</span>' : ''}
                                 </div>
                                 
@@ -892,11 +803,16 @@
                                         ${product.В_наличии > 0 ? `${product.В_наличии} шт.` : 'Под заказ'}
                                     </div>
                                     ${product.В_наличии > 0 ? `
-                                        <button class="btn btn-sm ${inCart ? 'btn-success' : 'btn-outline-primary'}" 
-                                                onclick="addToCart('${product.Артикул}')">
-                                            <i class="bi ${inCart ? 'bi-check' : 'bi-cart-plus'}"></i>
-                                            ${inCart ? 'В корзине' : 'В корзину'}
-                                        </button>
+                                        <div class="d-flex align-items-center">
+                                            <div class="product-quantity">
+                                                <input type="number" class="product-quantity-input" id="quantity-${product.Артикул}" value="1" min="1" max="${product.В_наличии}">
+                                            </div>
+                                            <button class="btn btn-sm ${inCart ? 'btn-success' : 'btn-outline-primary'}" 
+                                                    onclick="addToCart('${product.Артикул}')">
+                                                <i class="bi ${inCart ? 'bi-check' : 'bi-cart-plus'}"></i>
+                                                ${inCart ? 'В корзине' : 'В корзину'}
+                                            </button>
+                                        </div>
                                     ` : ''}
                                 </div>
                             </div>
@@ -913,21 +829,24 @@
             const product = allProducts.find(p => p.Артикул === article);
             if (!product) return;
 
+            const quantityInput = document.getElementById(`quantity-${article}`);
+            const quantity = Math.max(1, Math.min(product.В_наличии, parseInt(quantityInput.value) || 1));
+
             const existingItem = cart.find(item => item.Артикул === article);
             
             if (existingItem) {
-                existingItem.quantity += 1;
+                existingItem.quantity += quantity;
             } else {
                 cart.push({
                     ...product,
-                    quantity: 1,
+                    quantity: quantity,
                     discountPrice: calculateDiscountPrice(product.Цена, currentDiscount)
                 });
             }
             
             updateCartBadge();
             renderProducts();
-            showNotification('Товар добавлен в корзину', 'success');
+            showNotification(`Товар добавлен в корзину (${quantity} шт.)`, 'success');
         }
 
         function updateCartItem(article, quantity) {
@@ -1048,42 +967,6 @@
             // Простое уведомление
             alert(message);
         }
-
-        function renderPagination() {
-            const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-            const pagination = document.getElementById('pagination');
-            
-            if (totalPages <= 1) {
-                pagination.innerHTML = '';
-                return;
-            }
-            
-            let paginationHTML = '';
-            
-            for (let i = 1; i <= totalPages; i++) {
-                if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
-                    paginationHTML += `
-                        <li class="page-item ${i === currentPage ? 'active' : ''}">
-                            <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
-                        </li>
-                    `;
-                } else if (i === currentPage - 2 || i === currentPage + 2) {
-                    paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
-                }
-            }
-            
-            pagination.innerHTML = paginationHTML;
-        }
-
-        function changePage(page) {
-            currentPage = page;
-            renderProducts();
-            renderPagination();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // Автообновление
-        setInterval(loadData, 5 * 60 * 1000);
 
         // Загрузка при открытии
         document.addEventListener('DOMContentLoaded', loadData);
