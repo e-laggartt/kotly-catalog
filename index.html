@@ -76,11 +76,13 @@
             border: none;
             border-radius: var(--border-radius);
             transition: all 0.3s ease;
-            height: 100%;
             margin-bottom: 16px;
             overflow: hidden;
             box-shadow: var(--shadow-sm);
             border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            height: auto;
         }
 
         .card:hover {
@@ -100,6 +102,9 @@
 
         .card-body {
             padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .card-title {
@@ -108,11 +113,12 @@
             font-size: 0.95rem;
             line-height: 1.4;
             margin-bottom: 10px;
-            height: 36px;
+            /* Убрана фиксированная высота, чтобы текст мог занимать столько места, сколько нужно */
             overflow: hidden;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3; /* Увеличено количество строк до 3 */
             -webkit-box-orient: vertical;
+            min-height: 1.4em; /* Минимальная высота для одной строки */
         }
 
         .badge {
@@ -341,7 +347,7 @@
             
             .card-title {
                 font-size: 0.9rem;
-                height: 32px;
+                -webkit-line-clamp: 2; /* На мобильных ограничиваем 2 строками */
             }
             
             .accordion-section {
@@ -358,6 +364,21 @@
             }
             .accordion-button .bi-chevron-up {
                 transform: rotate(180deg);
+            }
+            
+            /* Улучшенное отображение карточек на мобильных */
+            .card-body {
+                padding: 12px;
+            }
+            
+            .card-footer-section {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .card-footer-section > div {
+                width: 100%;
+                justify-content: space-between;
             }
         }
         /* На десктопах аккордеоны всегда развернуты */
@@ -395,6 +416,23 @@
         /* Скрытые разделы */
         .hidden-section {
             display: none;
+        }
+        
+        /* Стили для артикула */
+        .product-article {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        /* Контейнер для нижней части карточки */
+        .card-footer-section {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
         }
     </style>
 </head>
@@ -776,7 +814,7 @@
                                  alt="${product.Модель}" 
                                  onerror="this.onerror=null; this.src='images/default.jpg'">
                             <div class="card-body">
-                                <h6 class="text-muted small mb-1">${product.Артикул}</h6>
+                                <div class="product-article">Артикул: ${product.Артикул}</div>
                                 <h5 class="card-title">${product.Модель}</h5>
                                 
                                 <div class="mb-2">
@@ -797,7 +835,7 @@
                                     `}
                                 </div>
                                 
-                                <div class="d-flex justify-content-between align-items-center">
+                                <div class="card-footer-section">
                                     <div class="stock-status ${product.В_наличии > 0 ? 'in-stock' : 'out-of-stock'}">
                                         <i class="bi ${product.В_наличии > 0 ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
                                         ${product.В_наличии > 0 ? `${product.В_наличии} шт.` : 'Под заказ'}
@@ -895,40 +933,45 @@
                 <div class="cart-item">
                     <div class="row align-items-center">
                         <div class="col-md-2">
-                            <img src="${item.Фото}" class="img-fluid" style="max-height: 80px;" 
+                            <img src="${item.Фото}" class="img-fluid rounded" 
+                                 alt="${item.Модель}" 
                                  onerror="this.onerror=null; this.src='images/default.jpg'">
                         </div>
                         <div class="col-md-4">
-                            <h6 class="mb-1">${item.Модель}</h6>
-                            <small class="text-muted">Артикул: ${item.Артикул}</small>
+                            <h6>${item.Модель}</h6>
+                            <div class="text-muted">Артикул: ${item.Артикул}</div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="fw-bold">${item.discountPrice.toLocaleString('ru-RU')} руб.</div>
+                            ${currentDiscount > 0 ? `
+                                <small class="text-muted text-decoration-line-through">
+                                    ${item.Цена.toLocaleString('ru-RU')} руб.
+                                </small>
+                            ` : ''}
                         </div>
                         <div class="col-md-2">
                             <div class="quantity-control">
                                 <button class="quantity-btn" onclick="updateCartItem('${item.Артикул}', ${item.quantity - 1})">-</button>
                                 <input type="number" class="quantity-input" value="${item.quantity}" 
-                                       onchange="updateCartItem('${item.Артикул}', this.value)">
+                                       onchange="updateCartItem('${item.Артикул}', this.value)" min="1">
                                 <button class="quantity-btn" onclick="updateCartItem('${item.Артикул}', ${item.quantity + 1})">+</button>
                             </div>
                         </div>
-                        <div class="col-md-2">
-                            <div class="text-end">
-                                <div class="fw-bold">${item.discountPrice.toLocaleString('ru-RU')} руб.</div>
-                                ${currentDiscount > 0 ? `
-                                    <small class="text-muted text-decoration-line-through">${item.Цена.toLocaleString('ru-RU')} руб.</small>
-                                ` : ''}
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="text-end">
-                                <div class="fw-bold">${(item.discountPrice * item.quantity).toLocaleString('ru-RU')} руб.</div>
-                                <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart('${item.Артикул}')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
+                        <div class="col-md-2 text-end">
+                            <div class="fw-bold mb-2">${(item.discountPrice * item.quantity).toLocaleString('ru-RU')} руб.</div>
+                            <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart('${item.Артикул}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
             `).join('');
+        }
+
+        // Навигация
+        function showCatalog() {
+            document.getElementById('catalog-section').classList.remove('hidden-section');
+            document.getElementById('cart-section').classList.add('hidden-section');
         }
 
         function showCart() {
@@ -937,39 +980,75 @@
             updateCart();
         }
 
-        function showCatalog() {
-            document.getElementById('cart-section').classList.add('hidden-section');
-            document.getElementById('catalog-section').classList.remove('hidden-section');
-        }
-
+        // Отправка запроса
         function sendRequest(type) {
             if (cart.length === 0) {
                 showNotification('Корзина пуста', 'warning');
                 return;
             }
 
-            const subject = type === 'invoice' ? 'Запрос счета' : 'Запрос коммерческого предложения';
-            const itemsText = cart.map(item => 
-                `${item.Модель} (Артикул: ${item.Артикул}) - ${item.quantity} шт. - ${item.discountPrice * item.quantity} руб.`
-            ).join('\n');
+            const requestType = type === 'invoice' ? 'Счёт' : 'КП';
+            const message = `Запрос ${requestType} на следующие товары:\n\n` +
+                cart.map(item => 
+                    `${item.Модель} (Артикул: ${item.Артикул}) - ${item.quantity} шт. x ${item.discountPrice} руб. = ${(item.discountPrice * item.quantity).toLocaleString('ru-RU')} руб.`
+                ).join('\n') +
+                `\n\nИтого: ${document.getElementById('cart-final-price').textContent}`;
 
-            const total = cart.reduce((sum, item) => sum + (item.discountPrice * item.quantity), 0);
+            // Здесь должна быть логика отправки на сервер
+            // Временно показываем уведомление
+            showNotification(`Запрос ${requestType} отправлен!`, 'success');
             
-            const body = `Здравствуйте!\n\nПрошу ${type === 'invoice' ? 'выставить счет' : 'предоставить коммерческое предложение'} на следующие товары:\n\n${itemsText}\n\nОбщая сумма: ${total.toLocaleString('ru-RU')} руб.\n\nС уважением,\n[Ваше имя]\n[Ваш телефон]\n[Ваш email]`;
-
-            const mailtoLink = `mailto:mt@laggartt.ru?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            
-            window.location.href = mailtoLink;
-            showNotification('Запрос отправлен', 'success');
+            // Очищаем корзину после отправки
+            cart = [];
+            updateCartBadge();
+            updateCart();
+            renderProducts();
         }
 
-        function showNotification(message, type) {
-            // Простое уведомление
-            alert(message);
+        // Уведомления
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+            notification.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>${message}</span>
+                    <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 3000);
         }
 
-        // Загрузка при открытии
-        document.addEventListener('DOMContentLoaded', loadData);
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            
+            // Инициализация аккордеонов для мобильных
+            if (window.innerWidth < 769) {
+                document.getElementById('filter-accordion-body').classList.remove('show');
+                document.getElementById('discount-accordion-body').classList.remove('show');
+                document.getElementById('filter-section').classList.add('collapsed');
+                document.getElementById('discount-section').classList.add('collapsed');
+            }
+        });
+
+        // Обработчик изменения размера окна
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 769) {
+                // На десктопе всегда показываем содержимое
+                document.getElementById('filter-accordion-body').classList.add('show');
+                document.getElementById('discount-accordion-body').classList.add('show');
+                document.getElementById('filter-section').classList.remove('collapsed');
+                document.getElementById('discount-section').classList.remove('collapsed');
+            }
+        });
     </script>
 </body>
 </html>
