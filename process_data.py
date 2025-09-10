@@ -9,7 +9,7 @@ def main():
         
         # Прямые ссылки на CSV экспорт Google Sheets
         price_url = "https://docs.google.com/spreadsheets/d/19PRNpA6F_HMI6iHSCg2iJF52PnN203ckY1WnqY_t5fc/export?format=csv"
-        stock_url = "https://docs.google.com/spreadsheets/d/1o0e3-E20mQsWToYVQpCHZgLcbizCafLRpoPdxr8Rqfw/export?format=csv"
+        stock_url = "  https://docs.google.com/spreadsheets/d/1o0e3-E20mQsWToYVQpCHZgLcbizCafLRpoPdxr8Rqfw/export?format=csv"
         
         # Загружаем данные
         print("Загружаем прайс...")
@@ -140,12 +140,16 @@ def main():
                 # Контуры - явное исключение для LN1GBQ60 и логика для MK/Devotion
                 if "LN1GBQ60" in model or "T2" in model or "MK" in model:
                     contours = "Одноконтурный"
-                elif " C " in model or "С " in model or "M6" in model:
-                    contours = "Двухконтурный"
-                elif " H " in model or "Н " in model:
-                    contours = "Одноконтурный"
                 else:
-                    contours = "Двухконтурный"  # По умолчанию для настенных
+                    # Исправленная логика для определения контуров
+                    # Ищем заглавную 'C' или 'H', окруженную пробелами, в ИСХОДНОЙ строке модели
+                    original_model = str(row['Модель'])
+                    if " C " in original_model:
+                        contours = "Двухконтурный"
+                    elif " H " in original_model:
+                        contours = "Одноконтурный"
+                    else:
+                        contours = "Двухконтурный"  # По умолчанию для настенных
                 
                 # Wi-Fi
                 if any(x in model for x in ['WI-FI', 'WIFI', 'ВАЙ-ФАЙ', 'WI FI']):
