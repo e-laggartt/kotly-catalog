@@ -28,33 +28,28 @@
             --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
             --border-radius: 12px;
         }
-
         body {
             background: var(--light-bg);
             color: var(--text-primary);
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             line-height: 1.6;
         }
-
         .navbar {
             background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
             box-shadow: var(--shadow-md);
             padding: 0.5rem 0;
         }
-
         .navbar-brand {
             font-weight: 700;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-
         .logo {
             height: 40px;
             width: auto;
             filter: brightness(0) invert(1);
         }
-
         .cart-badge {
             position: absolute;
             top: -5px;
@@ -70,7 +65,6 @@
             font-size: 0.7rem;
             font-weight: bold;
         }
-
         .card {
             background: var(--card-bg);
             border: none;
@@ -84,13 +78,11 @@
             flex-direction: column;
             height: auto;
         }
-
         .card:hover {
             transform: translateY(-4px);
             box-shadow: var(--shadow-lg);
             border-color: var(--primary);
         }
-
         .product-img {
             height: 200px;
             object-fit: contain;
@@ -99,28 +91,24 @@
             transition: all 0.3s ease;
             border-bottom: 1px solid #f1f5f9;
         }
-
         .card-body {
             padding: 16px;
             flex: 1;
             display: flex;
             flex-direction: column;
         }
-
         .card-title {
             font-weight: 600;
             color: var(--text-primary);
             font-size: 0.95rem;
             line-height: 1.4;
             margin-bottom: 10px;
-            /* Убрана фиксированная высота, чтобы текст мог занимать столько места, сколько нужно */
             overflow: hidden;
             display: -webkit-box;
-            -webkit-line-clamp: 3; /* Увеличено количество строк до 3 */
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
-            min-height: 1.4em; /* Минимальная высота для одной строки */
+            min-height: 1.4em;
         }
-
         .badge {
             font-weight: 500;
             padding: 5px 8px;
@@ -129,13 +117,11 @@
             margin-bottom: 6px;
             font-size: 0.7rem;
         }
-
         .badge.bg-primary { background: var(--gradient-primary) !important; }
         .badge.bg-secondary { background: var(--secondary) !important; }
         .badge.bg-success { background: var(--gradient-success) !important; }
         .badge.bg-danger { background: var(--gradient-danger) !important; }
         .badge.bg-warning { background: var(--gradient-accent) !important; color: white !important; }
-
         .price-section {
             background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
             padding: 12px;
@@ -143,25 +129,21 @@
             margin: 12px 0;
             border: 1px solid #e2e8f0;
         }
-
         .current-price {
             font-weight: 700;
             color: var(--primary);
             font-size: 1.2rem;
         }
-
         .original-price {
             text-decoration: line-through;
             color: var(--text-secondary);
             font-size: 0.9em;
         }
-
         .discount-price {
             font-weight: 700;
             color: var(--danger-light);
             font-size: 1.3em;
         }
-
         .stock-status {
             display: inline-flex;
             align-items: center;
@@ -172,10 +154,8 @@
             border-radius: 8px;
             background: #f8fafc;
         }
-
         .in-stock { color: var(--success); }
         .out-of-stock { color: var(--danger-light); }
-
         .btn-primary {
             background: var(--gradient-primary);
             border: none;
@@ -184,12 +164,10 @@
             font-weight: 600;
             transition: all 0.3s ease;
         }
-
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
         }
-
         .btn-success {
             background: var(--gradient-success);
             border: none;
@@ -198,7 +176,6 @@
             font-weight: 600;
             transition: all 0.3s ease;
         }
-
         .btn-warning {
             background: var(--gradient-accent);
             border: none;
@@ -207,27 +184,22 @@
             font-weight: 600;
             transition: all 0.3s ease;
         }
-
         .form-control, .form-select {
             border-radius: 8px;
             padding: 10px 16px;
             border: 2px solid #e2e8f0;
             transition: all 0.3s ease;
         }
-
         .form-control:focus, .form-select:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
-
         .form-range::-webkit-slider-thumb {
             background: var(--primary);
         }
-
         .form-range::-moz-range-thumb {
             background: var(--primary);
         }
-
         /* Стили для корзины */
         .cart-item {
             border: 1px solid #e2e8f0;
@@ -236,13 +208,11 @@
             margin-bottom: 12px;
             background: var(--card-bg);
         }
-
         .quantity-control {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-
         .quantity-btn {
             width: 32px;
             height: 32px;
@@ -255,12 +225,10 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-
         .quantity-btn:hover {
             background: #f3f4f6;
             border-color: #9ca3af;
         }
-
         .quantity-input {
             width: 50px;
             text-align: center;
@@ -268,14 +236,12 @@
             border-radius: 6px;
             padding: 4px;
         }
-
         .cart-total {
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             padding: 20px;
             border-radius: var(--border-radius);
             border: 1px solid #e2e8f0;
         }
-
         /* Стили для аккордеонов */
         .accordion-button {
             width: 100%;
@@ -299,7 +265,6 @@
             overflow: hidden;
             transition: max-height 0.3s ease-out, opacity 0.3s ease;
         }
-
         .accordion-section {
             background: var(--card-bg);
             padding: 20px;
@@ -309,11 +274,9 @@
             border: 1px solid #e2e8f0;
             transition: all 0.3s ease;
         }
-
         .accordion-section.collapsed {
             padding: 12px 20px;
         }
-
         /* Стили для поля количества в карточке товара */
         .product-quantity {
             display: flex;
@@ -321,7 +284,6 @@
             gap: 8px;
             margin-right: 10px;
         }
-
         .product-quantity-input {
             width: 60px;
             text-align: center;
@@ -329,31 +291,25 @@
             border-radius: 6px;
             padding: 5px;
         }
-
         /* Адаптивность */
         @media (max-width: 768px) {
             .container {
                 padding: 0 12px;
             }
-            
             .logo {
                 height: 35px;
             }
-            
             .product-img {
                 height: 160px;
                 padding: 15px;
             }
-            
             .card-title {
                 font-size: 0.9rem;
-                -webkit-line-clamp: 2; /* На мобильных ограничиваем 2 строками */
+                -webkit-line-clamp: 2;
             }
-            
             .accordion-section {
                 padding: 16px;
             }
-            /* На мобильных скрываем аккордеоны по умолчанию */
             .accordion-body {
                 max-height: 0;
                 opacity: 0;
@@ -365,17 +321,13 @@
             .accordion-button .bi-chevron-up {
                 transform: rotate(180deg);
             }
-            
-            /* Улучшенное отображение карточек на мобильных */
             .card-body {
                 padding: 12px;
             }
-            
             .card-footer-section {
                 flex-direction: column;
                 gap: 10px;
             }
-            
             .card-footer-section > div {
                 width: 100%;
                 justify-content: space-between;
@@ -392,17 +344,14 @@
                 display: block !important;
             }
         }
-
         /* Анимации */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         .card {
             animation: fadeIn 0.4s ease-out;
         }
-
         /* Улучшенный поиск */
         .search-container {
             background: var(--card-bg);
@@ -412,19 +361,16 @@
             margin-bottom: 24px;
             border: 1px solid #e2e8f0;
         }
-
         /* Скрытые разделы */
         .hidden-section {
             display: none;
         }
-        
         /* Стили для артикула */
         .product-article {
             font-size: 0.8rem;
             color: var(--text-secondary);
             margin-bottom: 8px;
         }
-        
         /* Контейнер для нижней части карточки */
         .card-footer-section {
             margin-top: auto;
@@ -433,6 +379,55 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 8px;
+        }
+        /* Категории */
+        .category-section {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 24px;
+        }
+        .category-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .category-icon.boiler { background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; }
+        .category-icon.water_heater { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; }
+        .category-icon.chimney { background: linear-gradient(135deg, #a3a3a3, #737373); color: white; }
+        .category-icon.accessory { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .category-icon:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-md);
+        }
+        .category-label {
+            font-weight: 600;
+            text-align: center;
+        }
+        .category-icon.active {
+            border: 3px solid var(--primary);
+            transform: scale(1.05);
+        }
+        /* Чекбокс НДС внизу страницы */
+        .vat-toggle-section {
+            margin-top: 40px;
+            padding: 20px 0;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+        .vat-toggle-section .form-check {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
         }
     </style>
 </head>
@@ -451,7 +446,6 @@
             </div>
         </div>
     </nav>
-
     <!-- Основной каталог -->
     <div id="catalog-section" class="container py-4">
         <!-- Поиск -->
@@ -467,98 +461,68 @@
                 </div>
             </div>
         </div>
-
-        <!-- Секция скидок -->
-        <div class="accordion-section" id="discount-section">
-            <!-- Кнопка-аккордеон для мобильных -->
-            <button type="button" class="accordion-button d-md-none" id="discount-accordion-button" onclick="toggleDiscounts()">
-                <span><i class="bi bi-percent"></i> Расчет скидки</span>
-                <i class="bi bi-chevron-up"></i>
-            </button>
-
-            <h5 class="mb-3 d-none d-md-block"><i class="bi bi-percent"></i> Расчет персональной скидки</h5>
-            
-            <!-- Тело аккордеона -->
-            <div class="accordion-body" id="discount-accordion-body">
-                <div class="row align-items-center">
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Размер скидки: <span id="discount-value">0</span>%</label>
-                        <input type="range" class="form-range" id="discount-slider" min="0" max="50" value="0" 
-                               oninput="updateDiscount(this.value)">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label fw-bold">Или введите %:</label>
-                        <input type="number" class="form-control" id="discount-input" min="0" max="50" value="0"
-                               oninput="updateDiscount(this.value)" placeholder="0">
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="show-original" checked
-                                   onchange="toggleOriginalPrices()">
-                            <label class="form-check-label" for="show-original">
-                                Показывать оригинальные цены
-                            </label>
+        <!-- Основная секция: Категории слева, Скидка справа -->
+        <div class="row">
+            <!-- Левая колонка: Категории -->
+            <div class="col-12 col-lg-8">
+                <div class="category-section">
+                    <h5 class="mb-3 text-primary"><i class="bi bi-grid-3x3-gap"></i> Категории</h5>
+                    <div class="row g-4 text-center">
+                        <div class="col-6 col-md-3">
+                            <div class="category-icon boiler" onclick="selectCategory('boiler')">
+                                <i class="bi bi-fire"></i>
+                            </div>
+                            <div class="category-label">Котлы</div>
                         </div>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="auto-apply" checked>
-                            <label class="form-check-label" for="auto-apply">
-                                Автоматически применять скидку
-                            </label>
+                        <div class="col-6 col-md-3">
+                            <div class="category-icon water_heater" onclick="selectCategory('water_heater')">
+                                <i class="bi bi-droplet-half"></i>
+                            </div>
+                            <div class="category-label">Бойлеры</div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="category-icon chimney" onclick="selectCategory('chimney')">
+                                <i class="bi bi-cloud-drizzle"></i>
+                            </div>
+                            <div class="category-label">Дымоходы</div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="category-icon accessory" onclick="selectCategory('accessory')">
+                                <i class="bi bi-tools"></i>
+                            </div>
+                            <div class="category-label">Комплектующие</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Динамические фильтры -->
+                <div class="accordion-section" id="dynamic-filter-section">
+                    <h5 class="mb-3 text-primary"><i class="bi bi-funnel"></i> Фильтры</h5>
+                    <div class="accordion-body" id="dynamic-filter-body">
+                        <!-- Фильтры будут генерироваться здесь динамически -->
+                        <div class="row g-3" id="filters-container">
+                            <!-- Фильтры появятся здесь -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Правая колонка: Скидка -->
+            <div class="col-12 col-lg-4">
+                <div class="accordion-section">
+                    <h5 class="mb-3"><i class="bi bi-percent"></i> Расчет скидки</h5>
+                    <div class="row align-items-center">
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Размер скидки: <span id="discount-value">0</span>%</label>
+                            <input type="range" class="form-range" id="discount-slider" min="0" max="50" value="0" 
+                                   oninput="updateDiscount(this.value)">
+                        </div>
+                        <div class="col-12 mt-2">
+                            <input type="number" class="form-control" id="discount-input" min="0" max="50" value="0"
+                                   oninput="updateDiscount(this.value)" placeholder="0">
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Фильтры -->
-        <div class="accordion-section" id="filter-section">
-            <!-- Кнопка-аккорdeон для мобильных -->
-            <button type="button" class="accordion-button d-md-none" id="filter-accordion-button" onclick="toggleFilters()">
-                <span><i class="bi bi-funnel"></i> Фильтры</span>
-                <i class="bi bi-chevron-up"></i>
-            </button>
-
-            <h5 class="mb-3 text-primary d-none d-md-block"><i class="bi bi-funnel"></i> Фильтры</h5>
-            
-            <!-- Тело аккордеона -->
-            <div class="accordion-body" id="filter-accordion-body">
-                <div class="row g-3">
-                    <div class="col-12 col-md-3">
-                        <select class="form-select" id="power-filter">
-                            <option value="">Все мощности</option>
-                            <option value="18">18 кВт</option>
-                            <option value="24">24 кВт</option>
-                            <option value="28">28 кВт</option>
-                            <option value="30">30 кВт</option>
-                            <option value="32">32 кВт</option>
-                            <option value="36">36 кВт</option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <select class="form-select" id="contour-filter">
-                            <option value="">Все контуры</option>
-                            <option value="Двухконтурный">Двухконтурные</option>
-                            <option value="Одноконтурный">Одноконтурные</option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <select class="form-select" id="wifi-filter">
-                            <option value="">Все</option>
-                            <option value="Да">С Wi-Fi</option>
-                            <option value="Нет">Без Wi-Fi</option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <select class="form-select" id="stock-filter">
-                            <option value="">Все</option>
-                            <option value="available">В наличии</option>
-                            <option value="outofstock">Под заказ</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Сортировка -->
         <div class="row mb-4">
             <div class="col-12">
@@ -569,16 +533,22 @@
                         <option value="price-asc">Цена (по возрастанию)</option>
                         <option value="price-desc">Цена (по убыванию)</option>
                         <option value="name-asc">По названию (А-Я)</option>
-                        <option value="power-asc">Мощность (по возрастанию)</option>
                     </select>
                 </div>
             </div>
         </div>
-
         <!-- Товары -->
         <div id="products-container" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4"></div>
+        <!-- Чекбокс НДС внизу страницы -->
+        <div class="vat-toggle-section">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="show-vat-toggle" onchange="toggleVatDisplay()">
+                <label class="form-check-label" for="show-vat-toggle">
+                    Показывать цены без НДС
+                </label>
+            </div>
+        </div>
     </div>
-
     <!-- Корзина -->
     <div id="cart-section" class="container py-4 hidden-section">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -587,14 +557,12 @@
                 <i class="bi bi-arrow-left"></i> Вернуться в каталог
             </button>
         </div>
-
         <div id="cart-items-container" class="mb-4">
             <div class="text-center text-muted py-5">
                 <i class="bi bi-cart-x" style="font-size: 3rem;"></i>
                 <p class="mt-3">Корзина пуста</p>
             </div>
         </div>
-
         <div class="cart-total">
             <div class="row">
                 <div class="col-md-6">
@@ -629,58 +597,22 @@
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let allProducts = [];
         let filteredProducts = [];
         let currentPage = 1;
-        const productsPerPage = 1000; // Все товары на одной странице
+        const productsPerPage = 1000;
         let currentDiscount = 0;
-        let showOriginalPrices = true; // По умолчанию включено
+        let currentCategory = '';
+        let showPricesWithoutVAT = false; // По умолчанию выключен
         let cart = [];
-
-        // Функция для переключения видимости фильтров
-        function toggleFilters() {
-            const accordionBody = document.getElementById('filter-accordion-body');
-            const accordionSection = document.getElementById('filter-section');
-            accordionBody.classList.toggle('show');
-            accordionSection.classList.toggle('collapsed');
-        }
-
-        // Функция для переключения видимости скидок
-        function toggleDiscounts() {
-            const accordionBody = document.getElementById('discount-accordion-body');
-            const accordionSection = document.getElementById('discount-section');
-            accordionBody.classList.toggle('show');
-            accordionSection.classList.toggle('collapsed');
-        }
 
         async function loadData() {
             try {
                 showLoading(true);
                 const response = await fetch('data.json');
                 allProducts = await response.json();
-                
-                // Исправляем определение контуров на лету
-                allProducts = allProducts.map(product => {
-                    const model = product.Модель;
-                    
-                    // Определяем контуры только по заглавным C и H
-                    if (model.includes(' C ') || model.includes(' C\n') || 
-                        model.endsWith(' C') || model.includes('(C)') ||
-                        model.includes(' С ') || model.includes(' С\n') || 
-                        model.endsWith(' С') || model.includes('(С)')) {
-                        product.Контуры = "Двухконтурный";
-                    } else if (model.includes(' H ') || model.includes(' H\n') || 
-                              model.endsWith(' H') || model.includes('(H)') ||
-                              model.includes(' Н ') || model.includes(' Н\n') || 
-                              model.endsWith(' Н') || model.includes('(Н)')) {
-                        product.Контуры = "Одноконтурный";
-                    }
-                    return product;
-                });
-                
                 updateStatistics();
                 filterProducts();
                 showLoading(false);
@@ -714,7 +646,6 @@
         function updateStatistics() {
             const total = allProducts.length;
             const available = allProducts.filter(p => p.В_наличии > 0).length;
-            
             document.getElementById('product-count').textContent = `Найдено ${filteredProducts.length} товаров`;
         }
 
@@ -730,36 +661,147 @@
             document.getElementById('discount-input').value = value;
             document.getElementById('discount-value').textContent = value;
             currentDiscount = value;
-            
-            if (document.getElementById('auto-apply').checked) {
-                renderProducts();
-            }
+            renderProducts();
         }
 
-        // Переключение показа оригинальных цен
-        function toggleOriginalPrices() {
-            showOriginalPrices = document.getElementById('show-original').checked;
-            renderProducts();
+        // Выбор категории
+        function selectCategory(category) {
+            // Снимаем активный класс со всех иконок
+            document.querySelectorAll('.category-icon').forEach(icon => {
+                icon.classList.remove('active');
+            });
+            // Добавляем активный класс на выбранную
+            document.querySelector(`.category-icon.${category}`).classList.add('active');
+            
+            currentCategory = category;
+            generateFiltersForCategory(category);
+            filterProducts();
+        }
+
+        // Генерация фильтров для выбранной категории
+        function generateFiltersForCategory(category) {
+            const container = document.getElementById('filters-container');
+            container.innerHTML = '';
+            
+            let filters = [];
+            
+            if (category === 'boiler') {
+                filters = [
+                    {
+                        id: 'power-filter',
+                        label: 'Мощность',
+                        options: ['', '18', '24', '28', '30', '32', '36', '45', '60', '80']
+                    },
+                    {
+                        id: 'contour-filter',
+                        label: 'Контуры',
+                        options: ['', 'Двухконтурный', 'Одноконтурный']
+                    },
+                    {
+                        id: 'wifi-filter',
+                        label: 'Wi-Fi',
+                        options: ['', 'Да', 'Нет']
+                    }
+                ];
+            } else if (category === 'water_heater') {
+                filters = [
+                    {
+                        id: 'volume-filter',
+                        label: 'Объем',
+                        options: ['', '150', '200', '300', '400', '500']
+                    }
+                ];
+            } else if (category === 'chimney') {
+                filters = [
+                    {
+                        id: 'diameter-filter',
+                        label: 'Диаметр',
+                        options: ['', 'DN60/100', 'DN80/125']
+                    },
+                    {
+                        id: 'chimney-type-filter',
+                        label: 'Тип',
+                        options: ['', 'Обычный', 'Конденсационный']
+                    }
+                ];
+            }
+            
+            // Добавляем общий фильтр по наличию
+            filters.push({
+                id: 'stock-filter',
+                label: 'Наличие',
+                options: ['', 'В наличии', 'Под заказ']
+            });
+            
+            // Генерируем HTML для фильтров
+            filters.forEach(filter => {
+                const col = document.createElement('div');
+                col.className = 'col-12 col-md-3';
+                
+                const select = document.createElement('select');
+                select.className = 'form-select';
+                select.id = filter.id;
+                select.onchange = filterProducts;
+                
+                filter.options.forEach(optionValue => {
+                    const option = document.createElement('option');
+                    option.value = optionValue;
+                    option.textContent = optionValue || `Все ${filter.label.toLowerCase()}`;
+                    select.appendChild(option);
+                });
+                
+                const label = document.createElement('label');
+                label.className = 'form-label fw-bold';
+                label.textContent = filter.label;
+                label.htmlFor = filter.id;
+                
+                col.appendChild(label);
+                col.appendChild(select);
+                container.appendChild(col);
+            });
         }
 
         function filterProducts() {
             const searchText = document.getElementById('search-input').value.toLowerCase();
-            const powerFilter = document.getElementById('power-filter').value;
-            const contourFilter = document.getElementById('contour-filter').value;
-            const wifiFilter = document.getElementById('wifi-filter').value;
-            const stockFilter = document.getElementById('stock-filter').value;
             
             filteredProducts = allProducts.filter(product => {
+                // Фильтр по поиску
                 const matchesSearch = product.Модель.toLowerCase().includes(searchText) || 
                                     product.Артикул.toLowerCase().includes(searchText);
-                const matchesPower = !powerFilter || product.Мощность === powerFilter;
-                const matchesContour = !contourFilter || product.Контуры === contourFilter;
-                const matchesWifi = !wifiFilter || product.WiFi === wifiFilter;
-                const matchesStock = !stockFilter || 
-                    (stockFilter === 'available' && product.В_наличии > 0) ||
-                    (stockFilter === 'outofstock' && product.В_наличии === 0);
                 
-                return matchesSearch && matchesPower && matchesContour && matchesWifi && matchesStock;
+                // Фильтр по категории
+                const matchesCategory = !currentCategory || product.type === currentCategory;
+                
+                // Динамические фильтры
+                let matchesDynamic = true;
+                
+                if (currentCategory === 'boiler') {
+                    const powerFilter = document.getElementById('power-filter')?.value || '';
+                    const contourFilter = document.getElementById('contour-filter')?.value || '';
+                    const wifiFilter = document.getElementById('wifi-filter')?.value || '';
+                    
+                    matchesDynamic = matchesDynamic && 
+                        (!powerFilter || product.Мощность === powerFilter) &&
+                        (!contourFilter || product.Контуры === contourFilter) &&
+                        (!wifiFilter || product.WiFi === wifiFilter);
+                } else if (currentCategory === 'water_heater') {
+                    const volumeFilter = document.getElementById('volume-filter')?.value || '';
+                    matchesDynamic = matchesDynamic && (!volumeFilter || product.Объем === volumeFilter);
+                } else if (currentCategory === 'chimney') {
+                    const diameterFilter = document.getElementById('diameter-filter')?.value || '';
+                    const chimneyTypeFilter = document.getElementById('chimney-type-filter')?.value || '';
+                    matchesDynamic = matchesDynamic && 
+                        (!diameterFilter || product.Диаметр === diameterFilter) &&
+                        (!chimneyTypeFilter || product.Тип_дымохода === chimneyTypeFilter);
+                }
+                
+                // Фильтр по наличию
+                const stockFilter = document.getElementById('stock-filter')?.value || '';
+                const matchesStock = !stockFilter || 
+                    (stockFilter === 'В наличии' && product.В_наличии > 0) ||
+                    (stockFilter === 'Под заказ' && product.В_наличии === 0);
+                
+                return matchesSearch && matchesCategory && matchesDynamic && matchesStock;
             });
             
             currentPage = 1;
@@ -768,7 +810,6 @@
 
         function sortProducts() {
             const sortOption = document.getElementById('sort-select').value;
-            
             filteredProducts.sort((a, b) => {
                 switch (sortOption) {
                     case 'name-asc': return a.Модель.localeCompare(b.Модель);
@@ -776,13 +817,43 @@
                     case 'price-asc': return a.Цена - b.Цена;
                     case 'price-desc': return b.Цена - a.Цена;
                     case 'stock-desc': return b.В_наличии - a.В_наличии;
-                    case 'power-asc': return (parseInt(a.Мощность) || 0) - (parseInt(b.Мощность) || 0);
-                    case 'power-desc': return (parseInt(b.Мощность) || 0) - (parseInt(a.Мощность) || 0);
                     default: return 0;
                 }
             });
-            
             renderProducts();
+        }
+
+        // Переключение отображения НДС
+        function toggleVatDisplay() {
+            showPricesWithoutVAT = document.getElementById('show-vat-toggle').checked;
+            renderProducts();
+        }
+
+        // Форматирование цены с учетом НДС и скидки
+        function formatPrice(price, hasDiscount, originalPrice) {
+            if (showPricesWithoutVAT) {
+                // Показываем цену без НДС
+                const priceWithoutVAT = Math.round(price / 1.2);
+                if (hasDiscount) {
+                    const originalWithoutVAT = Math.round(originalPrice / 1.2);
+                    return `
+                        <div class="original-price">${originalWithoutVAT.toLocaleString('ru-RU')} руб.</div>
+                        <div class="discount-price">${priceWithoutVAT.toLocaleString('ru-RU')} руб.</div>
+                    `;
+                } else {
+                    return `<div class="current-price">${priceWithoutVAT.toLocaleString('ru-RU')} руб.</div>`;
+                }
+            } else {
+                // Показываем цену с НДС
+                if (hasDiscount) {
+                    return `
+                        <div class="original-price">${originalPrice.toLocaleString('ru-RU')} руб.</div>
+                        <div class="discount-price">${price.toLocaleString('ru-RU')} руб.</div>
+                    `;
+                } else {
+                    return `<div class="current-price">${price.toLocaleString('ru-RU')} руб.</div>`;
+                }
+            }
         }
 
         function renderProducts() {
@@ -803,9 +874,38 @@
             }
             
             container.innerHTML = productsToShow.map(product => {
-                const discountPrice = calculateDiscountPrice(product.Цена, currentDiscount);
+                const originalPrice = product.Цена;
+                const finalPrice = calculateDiscountPrice(originalPrice, currentDiscount);
                 const hasDiscount = currentDiscount > 0;
                 const inCart = cart.find(item => item.Артикул === product.Артикул);
+                
+                // Формируем HTML для характеристик в зависимости от типа товара
+                let characteristicsHtml = '';
+                if (product.type === 'boiler') {
+                    characteristicsHtml = `
+                        <div class="mb-2">
+                            <span class="badge bg-primary">${product.Мощность} кВт</span>
+                            ${product.Контуры === 'Двухконтурный' ? 
+                                '<span class="badge bg-danger">Двухконтурный</span>' : 
+                                '<span class="badge bg-secondary">Одноконтурный</span>'}
+                            ${product.WiFi === 'Да' ? '<span class="badge bg-success">Wi-Fi</span>' : ''}
+                        </div>
+                    `;
+                } else if (product.type === 'water_heater') {
+                    characteristicsHtml = `
+                        <div class="mb-2">
+                            <span class="badge bg-info">${product.Объем} л</span>
+                        </div>
+                    `;
+                } else if (product.type === 'chimney') {
+                    characteristicsHtml = `
+                        <div class="mb-2">
+                            <span class="badge bg-warning">${product.Диаметр}</span>
+                            <span class="badge bg-primary">${product.Тип_дымохода}</span>
+                        </div>
+                    `;
+                }
+                // Для accessory ничего не добавляем
                 
                 return `
                     <div class="col">
@@ -816,25 +916,11 @@
                             <div class="card-body">
                                 <div class="product-article">Артикул: ${product.Артикул}</div>
                                 <h5 class="card-title">${product.Модель}</h5>
-                                
-                                <div class="mb-2">
-                                    <span class="badge bg-primary">${product.Мощность} кВт</span>
-                                    ${product.Контуры === 'Двухконтурный' ? 
-                                        '<span class="badge bg-danger">Двухконтурный</span>' : 
-                                        '<span class="badge bg-secondary">Одноконтурный</span>'}
-                                    ${product.WiFi === 'Да' ? '<span class="badge bg-success">Wi-Fi</span>' : ''}
-                                </div>
-                                
+                                ${characteristicsHtml}
                                 <div class="price-section">
-                                    ${hasDiscount ? `
-                                        ${showOriginalPrices ? `<div class="original-price">${product.Цена.toLocaleString('ru-RU')} руб.</div>` : ''}
-                                        <div class="discount-price">${discountPrice.toLocaleString('ru-RU')} руб.</div>
-                                        <small class="text-success">Экономия ${currentDiscount}%</small>
-                                    ` : `
-                                        <div class="current-price">${product.Цена.toLocaleString('ru-RU')} руб.</div>
-                                    `}
+                                    ${formatPrice(finalPrice, hasDiscount, originalPrice)}
+                                    ${hasDiscount ? `<small class="text-success">Экономия ${currentDiscount}%</small>` : ''}
                                 </div>
-                                
                                 <div class="card-footer-section">
                                     <div class="stock-status ${product.В_наличии > 0 ? 'in-stock' : 'out-of-stock'}">
                                         <i class="bi ${product.В_наличии > 0 ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
@@ -866,12 +952,9 @@
         function addToCart(article) {
             const product = allProducts.find(p => p.Артикул === article);
             if (!product) return;
-
             const quantityInput = document.getElementById(`quantity-${article}`);
             const quantity = Math.max(1, Math.min(product.В_наличии, parseInt(quantityInput.value) || 1));
-
             const existingItem = cart.find(item => item.Артикул === article);
-            
             if (existingItem) {
                 existingItem.quantity += quantity;
             } else {
@@ -881,7 +964,6 @@
                     discountPrice: calculateDiscountPrice(product.Цена, currentDiscount)
                 });
             }
-            
             updateCartBadge();
             renderProducts();
             showNotification(`Товар добавлен в корзину (${quantity} шт.)`, 'success');
@@ -913,12 +995,11 @@
             const totalPrice = cart.reduce((sum, item) => sum + (item.Цена * item.quantity), 0);
             const totalDiscount = cart.reduce((sum, item) => sum + ((item.Цена - item.discountPrice) * item.quantity), 0);
             const finalPrice = totalPrice - totalDiscount;
-
             document.getElementById('cart-total-items').textContent = totalItems;
             document.getElementById('cart-total-price').textContent = totalPrice.toLocaleString('ru-RU') + ' руб.';
             document.getElementById('cart-total-discount').textContent = totalDiscount.toLocaleString('ru-RU') + ' руб.';
             document.getElementById('cart-final-price').textContent = finalPrice.toLocaleString('ru-RU') + ' руб.';
-
+            
             if (cart.length === 0) {
                 container.innerHTML = `
                     <div class="text-center text-muted py-5">
@@ -928,7 +1009,7 @@
                 `;
                 return;
             }
-
+            
             container.innerHTML = cart.map(item => `
                 <div class="cart-item">
                     <div class="row align-items-center">
@@ -968,41 +1049,48 @@
             `).join('');
         }
 
-        // Навигация
-        function showCatalog() {
-            document.getElementById('catalog-section').classList.remove('hidden-section');
-            document.getElementById('cart-section').classList.add('hidden-section');
-        }
-
-        function showCart() {
-            document.getElementById('catalog-section').classList.add('hidden-section');
-            document.getElementById('cart-section').classList.remove('hidden-section');
-            updateCart();
-        }
-
-        // Отправка запроса
+        // Отправка запроса через почтовый клиент
         function sendRequest(type) {
             if (cart.length === 0) {
                 showNotification('Корзина пуста', 'warning');
                 return;
             }
-
-            const requestType = type === 'invoice' ? 'Счёт' : 'КП';
-            const message = `Запрос ${requestType} на следующие товары:\n\n` +
-                cart.map(item => 
-                    `${item.Модель} (Артикул: ${item.Артикул}) - ${item.quantity} шт. x ${item.discountPrice} руб. = ${(item.discountPrice * item.quantity).toLocaleString('ru-RU')} руб.`
-                ).join('\n') +
-                `\n\nИтого: ${document.getElementById('cart-final-price').textContent}`;
-
-            // Здесь должна быть логика отправки на сервер
-            // Временно показываем уведомление
-            showNotification(`Запрос ${requestType} отправлен!`, 'success');
             
-            // Очищаем корзину после отправки
-            cart = [];
-            updateCartBadge();
-            updateCart();
-            renderProducts();
+            const subject = type === 'invoice' ? 'Запрос счета на оплату' : 'Запрос коммерческого предложения';
+            let body = '';
+            
+            if (type === 'invoice') {
+                body = `Здравствуйте!
+
+Прошу выставить счет на оплату по следующим позициям:
+
+`;
+            } else {
+                body = `Здравствуйте!
+
+Прошу подготовить коммерческое предложение на следующие товары:
+
+`;
+            }
+            
+            body += cart.map(item => 
+                `${item.Модель} (Артикул: ${item.Артикул}) - ${item.quantity} шт. x ${item.discountPrice} руб. = ${(item.discountPrice * item.quantity).toLocaleString('ru-RU')} руб.`
+            ).join('\n') + `
+            
+Общая сумма: ${document.getElementById('cart-final-price').textContent}
+Примененная скидка: ${currentDiscount}%
+
+Для оформления документов, пожалуйста, укажите:
+- Название вашей компании:
+- ИНН:
+
+Контактные данные для связи: [Ваши контактные данные]
+
+Заранее благодарю!`;
+            
+            // Кодируем тему и тело письма для URL
+            const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailtoLink;
         }
 
         // Уведомления
@@ -1016,9 +1104,7 @@
                     <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
                 </div>
             `;
-            
             document.body.appendChild(notification);
-            
             setTimeout(() => {
                 if (notification.parentElement) {
                     notification.remove();
@@ -1026,28 +1112,23 @@
             }, 3000);
         }
 
+        // Навигация
+        function showCatalog() {
+            document.getElementById('catalog-section').classList.remove('hidden-section');
+            document.getElementById('cart-section').classList.add('hidden-section');
+        }
+
+        function showCart() {
+            document.getElementById('catalog-section').classList.add('hidden-section');
+            document.getElementById('cart-section').classList.remove('hidden-section');
+            updateCart();
+        }
+
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
-            
-            // Инициализация аккордеонов для мобильных
-            if (window.innerWidth < 769) {
-                document.getElementById('filter-accordion-body').classList.remove('show');
-                document.getElementById('discount-accordion-body').classList.remove('show');
-                document.getElementById('filter-section').classList.add('collapsed');
-                document.getElementById('discount-section').classList.add('collapsed');
-            }
-        });
-
-        // Обработчик изменения размера окна
-        window.addEventListener('resize', function() {
-            if (window.innerWidth >= 769) {
-                // На десктопе всегда показываем содержимое
-                document.getElementById('filter-accordion-body').classList.add('show');
-                document.getElementById('discount-accordion-body').classList.add('show');
-                document.getElementById('filter-section').classList.remove('collapsed');
-                document.getElementById('discount-section').classList.remove('collapsed');
-            }
+            // По умолчанию выбираем категорию "Котлы"
+            selectCategory('boiler');
         });
     </script>
 </body>
