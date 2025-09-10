@@ -124,7 +124,7 @@ def main():
             
             if product_type == "boiler":
                 # Мощность - ищем число перед C/H/С/Х или в артикуле для Devotion/MK
-                power_match = re.search(r'(\d+)\s*(кВт|KW|C|H|С|Х)', model)
+                power_match = re.search(r'(\d+)\s*(кВт|KW|C|H|С|Н)', model)
                 if power_match:
                     power = power_match.group(1)
                 else:
@@ -137,16 +137,17 @@ def main():
                     else:
                         power = "Не указана"
                 
-                # Контуры - явное исключение для LN1GBQ60 и логика для MK/Devotion
-                if "LN1GBQ60" in model or "T2" in model or "MK" in model:
+                # Контуры - СНАЧАЛА проверяем ВСЕ варианты C/H в ИСХОДНОЙ строке
+                original_model = str(row['Модель'])
+                
+                # Проверяем все возможные комбинации латинских и кириллических букв
+                if " C " in original_model or " С " in original_model:  # Латинская C и Кириллическая С (эс)
+                    contours = "Двухконтурный"
+                elif " H " in original_model or " Н " in original_model:  # Латинская H и Кириллическая Н (аш)
                     contours = "Одноконтурный"
                 else:
-                    # Исправленная логика для определения контуров
-                    # Ищем заглавную 'C' или 'H', окруженную пробелами, в ИСХОДНОЙ строке модели
-                    original_model = str(row['Модель'])
-                    if " C " in original_model:
-                        contours = "Двухконтурный"
-                    elif " H " in original_model:
+                    # Если ни один из вариантов не найден, применяем правила для специальных серий
+                    if "LN1GBQ60" in model or "T2" in model or "MK" in model:
                         contours = "Одноконтурный"
                     else:
                         contours = "Двухконтурный"  # По умолчанию для настенных
