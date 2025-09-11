@@ -1086,6 +1086,32 @@
             loadData();
             selectCategory('boiler');
         });
+
+        // Добавляем функциональность аккордеона для мобильных устройств
+        document.addEventListener('DOMContentLoaded', function() {
+            // Находим кнопку аккордеона и тело аккордеона
+            const accordionButton = document.querySelector('.accordion-section h5');
+            const accordionBody = document.getElementById('dynamic-filter-body');
+            const chevronIcon = accordionButton.querySelector('.bi');
+
+            // Проверяем, что элементы существуют на странице
+            if (accordionButton && accordionBody && chevronIcon) {
+                // Добавляем обработчик события на клик по заголовку
+                accordionButton.addEventListener('click', function() {
+                    // Переключаем класс 'show' у тела аккордеона
+                    accordionBody.classList.toggle('show');
+
+                    // Если тело аккордеона сейчас видимо (имеет класс 'show'),
+                    // то поворачиваем иконку вверх (стрелка смотрит вверх, секция открыта)
+                    // Иначе возвращаем иконку в исходное положение (стрелка смотрит вниз, секция закрыта)
+                    if (accordionBody.classList.contains('show')) {
+                        chevronIcon.classList.add('bi-chevron-up');
+                    } else {
+                        chevronIcon.classList.remove('bi-chevron-up');
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
