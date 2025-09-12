@@ -2,7 +2,7 @@ name: Update Data from Google Sheets
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Каждые 6 часов
+    - cron: '0 * * * *'  # В начале каждого часа
   workflow_dispatch:  # Ручной запуск
 
 jobs:
