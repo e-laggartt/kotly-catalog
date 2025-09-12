@@ -620,7 +620,7 @@
                 const response = await fetch('data.json');
                 allProducts = await response.json();
                 updateStatistics();
-                filterProducts();
+                selectCategory('boiler'); // Важно: запускаем выбор категории
                 showLoading(false);
                 updateCartBadge();
                 updateCompareBadge();
@@ -765,13 +765,11 @@
         }
 
         function handleSearch() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
+            clearTimeout(window.searchTimeout);
+            window.searchTimeout = setTimeout(() => {
                 filterProducts();
             }, 300);
         }
-
-        let searchTimeout;
 
         function sortProducts() {
             const sortOption = document.getElementById('sort-select').value;
@@ -817,7 +815,6 @@
             }
         }
 
-        // Обновлённая функция: разрешает любое количество (минимум 1)
         function validateQuantityInput(input) {
             let value = parseInt(input.value) || 1;
             value = Math.max(1, value);
@@ -873,8 +870,8 @@
                     <div class="col">
                         <div class="card h-100">
                             <img src="${product.Фото}" class="card-img-top product-img" 
-                                 alt="${product.Модель}" 
-                                 onerror="this.onerror=null; this.src='images/default.jpg'">
+                                alt="${product.Модель}" 
+                                onerror="this.onerror=null; this.src='images/default.jpg'">
                             <div class="card-body">
                                 <div class="product-article">Артикул: ${product.Артикул}</div>
                                 <h5 class="card-title">${product.Модель}</h5>
@@ -894,12 +891,11 @@
                                             <i class="bi ${inCompare ? 'bi-check' : 'bi-journals'}"></i>
                                             ${inCompare ? 'В сравнении' : 'Сравнить'}
                                         </button>
-                                        <!-- Всегда показываем поле количества и кнопку -->
                                         <div class="d-flex align-items-center">
                                             <div class="product-quantity">
                                                 <input type="number" class="product-quantity-input" id="quantity-${product.Артикул}" 
-                                                       value="1" min="1" 
-                                                       onchange="validateQuantityInput(this)">
+                                                    value="1" min="1" 
+                                                    onchange="validateQuantityInput(this)">
                                             </div>
                                             <button class="btn btn-sm ${inCart ? 'btn-success' : 'btn-outline-primary'}" 
                                                     onclick="addToCart('${product.Артикул}')">
@@ -1014,8 +1010,8 @@
                     <div class="row align-items-center">
                         <div class="col-md-2">
                             <img src="${item.Фото}" class="img-fluid rounded" 
-                                 alt="${item.Модель}" 
-                                 onerror="this.onerror=null; this.src='images/default.jpg'">
+                                alt="${item.Модель}" 
+                                onerror="this.onerror=null; this.src='images/default.jpg'">
                         </div>
                         <div class="col-md-4">
                             <h6>${item.Модель}</h6>
@@ -1033,7 +1029,7 @@
                             <div class="quantity-control">
                                 <button class="quantity-btn" onclick="updateCartItem('${item.Артикул}', ${item.quantity - 1})">-</button>
                                 <input type="number" class="quantity-input" value="${item.quantity}" 
-                                       onchange="updateCartItem('${item.Артикул}', this.value)" min="1">
+                                    onchange="updateCartItem('${item.Артикул}', this.value)" min="1">
                                 <button class="quantity-btn" onclick="updateCartItem('${item.Артикул}', ${item.quantity + 1})">+</button>
                             </div>
                         </div>
@@ -1048,7 +1044,6 @@
             `).join('');
         }
 
-        // Исправленная функция: использует window.open и правильно кодирует переносы строк
         function sendRequest(type) {
             if (cart.length === 0) {
                 showNotification('Корзина пуста', 'warning');
@@ -1065,7 +1060,6 @@
                 `${item.Модель} (Артикул: ${item.Артикул}) - ${item.quantity} шт. x ${item.discountPrice} руб. = ${(item.discountPrice * item.quantity).toLocaleString('ru-RU')} руб.`
             ).join('\n') + `\n\nОбщая сумма: ${document.getElementById('cart-final-price').textContent}\nПримененная скидка: ${currentDiscount}%\nДля оформления документов, пожалуйста, укажите:\n- Название вашей компании:\n- ИНН:\nКонтактные данные для связи: [Ваши контактные данные]\nЗаранее благодарю!`;
 
-            // Заменяем \n на %0A для корректного отображения в mailto
             const encodedBody = encodeURIComponent(body.replace(/\n/g, '%0A'));
             const mailtoLink = `mailto:mt@laggartt.ru?subject=${encodeURIComponent(subject)}&body=${encodedBody}`;
             window.open(mailtoLink, '_blank');
@@ -1108,26 +1102,23 @@
             window.open('compare.html', '_blank');
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            loadData();
-            selectCategory('boiler');
-        });
-
-        // Аккордеон для мобильных
-        document.addEventListener('DOMContentLoaded', function() {
-            const accordionButton = document.querySelector('.accordion-section h5');
-            const accordionBody = document.getElementById('dynamic-filter-body');
-            const chevronIcon = accordionButton?.querySelector('.bi');
-            if (accordionButton && accordionBody && chevronIcon) {
-                accordionButton.addEventListener('click', function() {
-                    accordionBody.classList.toggle('show');
-                    if (accordionBody.classList.contains('show')) {
-                        chevronIcon.classList.add('bi-chevron-up');
-                    } else {
-                        chevronIcon.classList.remove('bi-chevron-up');
-                    }
-                });
+        // Функция переключения аккордеона
+        function toggleAccordion() {
+            const body = document.getElementById('dynamic-filter-body');
+            const icon = document.querySelector('.accordion-button .bi');
+            body.classList.toggle('show');
+            if (body.classList.contains('show')) {
+                icon.classList.remove('bi-chevron-down');
+                icon.classList.add('bi-chevron-up');
+            } else {
+                icon.classList.remove('bi-chevron-up');
+                icon.classList.add('bi-chevron-down');
             }
+        }
+
+        // Инициализация после загрузки DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData(); // Это вызовет filterProducts → renderProducts
         });
     </script>
 </body>
