@@ -1,3 +1,4 @@
+# process_data.py
 import pandas as pd
 import json
 import re
@@ -9,7 +10,7 @@ def main():
         
         # Прямые ссылки на CSV экспорт Google Sheets
         price_url = "https://docs.google.com/spreadsheets/d/19PRNpA6F_HMI6iHSCg2iJF52PnN203ckY1WnqY_t5fc/export?format=csv"
-        stock_url = "  https://docs.google.com/spreadsheets/d/1o0e3-E20mQsWToYVQpCHZgLcbizCafLRpoPdxr8Rqfw/export?format=csv"
+        stock_url = "https://docs.google.com/spreadsheets/d/1o0e3-E20mQsWToYVQpCHZgLcbizCafLRpoPdxr8Rqfw/export?format=csv"
         
         # Загружаем данные
         print("Загружаем прайс...")
@@ -109,6 +110,50 @@ def main():
         # Добавляем тип товара
         merged_df['type'] = merged_df['Модель'].apply(determine_type)
         
+        # --- СПЕЦИАЛЬНЫЕ ПРАВИЛА ДЛЯ КОТЛОВ DEVOTION ---
+        # Жестко заданные параметры для моделей Devotion
+        devotion_rules = {
+            "LL1GBQ30-M6": {
+                "power": "30",
+                "contours": "Двухконтурный",
+                "wifi": "Нет",
+                "boiler_type": "Конденсационный",
+                "execution": "Настенный",
+                "image": "images/devotion-ll1gbq30-m6.jpg"
+            },
+            "LL1GBQ35-M6": {
+                "power": "36",
+                "contours": "Двухконтурный",
+                "wifi": "Нет",
+                "boiler_type": "Конденсационный",
+                "execution": "Настенный",
+                "image": "images/devotion-ll1gbq35-m6.jpg"
+            },
+            "LN1GBQ60-T2": {
+                "power": "60",
+                "contours": "Одноконтурный",
+                "wifi": "Нет",
+                "boiler_type": "Конденсационный",
+                "execution": "Настенный",
+                "image": "images/devotion-ln1gbq60-t2.jpg"
+            }
+        }
+        # --- КОНЕЦ ПРАВИЛ ДЛЯ DEVOTION ---
+
+        # --- СПИСКИ МОДЕЛЕЙ ДЛЯ ОПРЕДЕЛЕНИЯ ТИПА КОТЛА ---
+        # Конденсационные котлы (подстроки для поиска)
+        condensing_boilers = [
+            "METEOR M30", "METEOR M6", "METEOR T2"
+        ]
+        
+        # Традиционные котлы (подстроки для поиска)
+        traditional_boilers = [
+            "LAGGARTT ГАЗ 6000",
+            "METEOR C11", "METEOR Q3", "METEOR B20", "METEOR B23",
+            "METEOR C30", "METEOR B30"
+        ]
+        # --- КОНЕЦ СПИСКОВ ---
+
         # Функция для извлечения характеристик в зависимости от типа
         def extract_info(row):
             model = str(row['Модель']).upper()
@@ -121,8 +166,51 @@ def main():
             volume = ""
             diameter = ""
             chimney_type = ""
+            boiler_type = ""  # Конденсационный/Традиционный
+            execution = ""   # Настенный/Напольный
             
             if product_type == "boiler":
+                # --- ОПРЕДЕЛЕНИЕ ХАРАКТЕРИСТИК ДЛЯ DEVOTION ---
+                if "DEVOTION" in model:
+                    # Извлекаем артикул (часть после последнего пробела)
+                    parts = model.split()
+                    if parts:
+                        article_part = parts[-1]
+                        # Если артикул есть в правилах, используем жесткие значения
+                        if article_part in devotion_rules:
+                            rule = devotion_rules[article_part]
+                            power = rule["power"]
+                            contours = rule["contours"]
+                            wifi = rule["wifi"]
+                            boiler_type = rule["boiler_type"]
+                            execution = rule["execution"]
+                            # Возвращаем сразу, так как все значения установлены
+                            return pd.Series([power, contours, wifi, volume, diameter, chimney_type, boiler_type, execution])
+                        # Если артикул не найден в правилах, продолжаем обработку как обычного котла
+                
+                # --- ОПРЕДЕЛЕНИЕ ХАРАКТЕРИСТИК ДЛЯ ОСТАЛЬНЫХ КОТЛОВ ---
+                
+                # 1. Определяем тип котла (если не установлен через Devotion)
+                if not boiler_type: # Если еще не определен
+                     if "DEVOTION" in model:
+                         # Для других Devotion, если не попали в правила
+                         boiler_type = "Не определен"
+                     else:
+                         # Проверяем по спискам
+                         if any(cond_model in model for cond_model in condensing_boilers):
+                             boiler_type = "Конденсационный"
+                         elif any(trad_model in model for trad_model in traditional_boilers):
+                             boiler_type = "Традиционный"
+                         else:
+                             boiler_type = "Не определен"
+                
+                # 2. Определяем исполнение
+                if "MK" in model:
+                    execution = "Напольный"
+                else:
+                    execution = "Настенный"
+                
+                # 3. Остальные характеристики (мощность, контуры, wifi) определяем как раньше
                 # Мощность - ищем число перед C/H/С/Х или в артикуле для Devotion/MK
                 power_match = re.search(r'(\d+)\s*(кВт|KW|C|H|С|Н)', model)
                 if power_match:
@@ -182,10 +270,10 @@ def main():
             
             # Для accessory ничего не делаем, все поля остаются пустыми
             
-            return pd.Series([power, contours, wifi, volume, diameter, chimney_type])
+            return pd.Series([power, contours, wifi, volume, diameter, chimney_type, boiler_type, execution])
         
         # Применяем функцию извлечения характеристик
-        merged_df[['Мощность', 'Контуры', 'WiFi', 'Объем', 'Диаметр', 'Тип_дымохода']] = merged_df.apply(extract_info, axis=1)
+        merged_df[['Мощность', 'Контуры', 'WiFi', 'Объем', 'Диаметр', 'Тип_дымохода', 'Тип_котла', 'Исполнение']] = merged_df.apply(extract_info, axis=1)
         
         # Функция для определения фото по модели и типу
         def get_image_for_model(row):
@@ -195,6 +283,15 @@ def main():
             
             # Правила для котлов (boiler)
             if product_type == "boiler":
+                # Сначала проверяем правила для Devotion (жесткие значения)
+                if "DEVOTION" in model:
+                    parts = model.split()
+                    if parts:
+                        article_part = parts[-1]
+                        if article_part in devotion_rules:
+                            return devotion_rules[article_part]["image"]
+                
+                # Потом проверяем правила для других котлов
                 if 'METEOR T2' in model:
                     return 'images/meteor-t2.jpg'
                 elif 'METEOR C30' in model:
@@ -213,8 +310,6 @@ def main():
                     return 'images/meteor-m6.jpg'
                 elif 'LAGGARTT' in model or 'ГАЗ 6000' in model:
                     return 'images/laggartt.jpg'
-                elif 'DEVOTION' in model:
-                    return 'images/devotion.jpg'
                 elif 'MK' in model:
                     return 'images/mk.jpg'
                 else:
@@ -270,6 +365,8 @@ def main():
                 item["Мощность"] = row["Мощность"]
                 item["Контуры"] = row["Контуры"]
                 item["WiFi"] = row["WiFi"]
+                item["Тип_котла"] = row["Тип_котла"]
+                item["Исполнение"] = row["Исполнение"]
             elif row["type"] == "water_heater":
                 item["Объем"] = row["Объем"]
             elif row["type"] == "chimney":
@@ -293,6 +390,7 @@ def main():
             print(f"   Тип: {item['type']}, Цена: {item['Цена']} руб., Наличие: {item['В_наличии']} шт.")
             if item['type'] == 'boiler':
                 print(f"   Контуры: {item.get('Контуры', '')}, Мощность: {item.get('Мощность', '')} кВт, Wi-Fi: {item.get('WiFi', '')}")
+                print(f"   Тип: {item.get('Тип_котла', '')}, Исполнение: {item.get('Исполнение', '')}")
             elif item['type'] == 'water_heater':
                 print(f"   Объем: {item.get('Объем', '')} л")
             elif item['type'] == 'chimney':

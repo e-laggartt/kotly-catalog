@@ -127,6 +127,7 @@
         .badge.bg-success { background: var(--gradient-success) !important; }
         .badge.bg-danger { background: var(--gradient-danger) !important; }
         .badge.bg-warning { background: var(--gradient-accent) !important; color: white !important; }
+        .badge.bg-info { background: #0ea5e9 !important; color: white !important; }
         .price-section {
             background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
             padding: 12px;
@@ -437,6 +438,29 @@
             align-items: center;
             gap: 10px;
         }
+        /* Стили для кнопок поделиться */
+        .share-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .share-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+        .share-btn:hover {
+            transform: scale(1.1);
+        }
+        .whatsapp { background-color: #25D366; }
+        .telegram { background-color: #0088cc; }
     </style>
 </head>
 <body>
@@ -613,7 +637,6 @@
         let showPricesWithoutVAT = false;
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
         let compareList = JSON.parse(localStorage.getItem('compareList')) || [];
-
         async function loadData() {
             try {
                 showLoading(true);
@@ -636,7 +659,6 @@
                 `;
             }
         }
-
         function showLoading(show) {
             if (show) {
                 document.getElementById('products-container').innerHTML = `
@@ -650,15 +672,12 @@
                 `;
             }
         }
-
         function updateStatistics() {
             document.getElementById('product-count').textContent = `Найдено ${filteredProducts.length} товаров`;
         }
-
         function calculateDiscountPrice(price, discount) {
             return Math.round(price * (1 - discount / 100));
         }
-
         function updateDiscount(value) {
             value = Math.max(0, Math.min(50, parseInt(value) || 0));
             document.getElementById('discount-slider').value = value;
@@ -667,7 +686,6 @@
             currentDiscount = value;
             renderProducts();
         }
-
         function selectCategory(category) {
             document.querySelectorAll('.category-icon').forEach(icon => {
                 icon.classList.remove('active');
@@ -677,16 +695,17 @@
             generateFiltersForCategory(category);
             filterProducts();
         }
-
         function generateFiltersForCategory(category) {
             const container = document.getElementById('filters-container');
             container.innerHTML = '';
             let filters = [];
             if (category === 'boiler') {
                 filters = [
-                    { id: 'power-filter', label: 'Мощность', options: ['', '18', '24', '28', '30', '32', '36', '45', '60', '80'] },
+                    { id: 'power-filter', label: 'Мощность', options: ['', '18', '24', '28', '30', '32', '35', '36', '45', '60', '80'] },
                     { id: 'contour-filter', label: 'Контуры', options: ['', 'Двухконтурный', 'Одноконтурный'] },
-                    { id: 'wifi-filter', label: 'Wi-Fi', options: ['', 'Да', 'Нет'] }
+                    { id: 'wifi-filter', label: 'Wi-Fi', options: ['', 'Да', 'Нет'] },
+                    // Заменяем фильтр "Наличие" на "Тип котла"
+                    { id: 'boiler-type-filter', label: 'Тип котла', options: ['', 'Конденсационный', 'Традиционный'] }
                 ];
             } else if (category === 'water_heater') {
                 filters = [
@@ -698,7 +717,9 @@
                     { id: 'chimney-type-filter', label: 'Тип', options: ['', 'Обычный', 'Конденсационный'] }
                 ];
             }
-            filters.push({ id: 'stock-filter', label: 'Наличие', options: ['', 'В наличии', 'Под заказ'] });
+            // Убираем общий фильтр "Наличие" для всех категорий
+            // filters.push({ id: 'stock-filter', label: 'Наличие', options: ['', 'В наличии', 'Под заказ'] });
+            
             filters.forEach(filter => {
                 const col = document.createElement('div');
                 col.className = 'col-12 col-md-3';
@@ -721,7 +742,6 @@
                 container.appendChild(col);
             });
         }
-
         function filterProducts() {
             const searchText = document.getElementById('search-input').value.toLowerCase().trim();
             if (searchText) {
@@ -739,10 +759,12 @@
                         const powerFilter = document.getElementById('power-filter')?.value || '';
                         const contourFilter = document.getElementById('contour-filter')?.value || '';
                         const wifiFilter = document.getElementById('wifi-filter')?.value || '';
+                        const boilerTypeFilter = document.getElementById('boiler-type-filter')?.value || '';
                         matchesDynamic = matchesDynamic && 
                             (!powerFilter || product.Мощность === powerFilter) &&
                             (!contourFilter || product.Контуры === contourFilter) &&
-                            (!wifiFilter || product.WiFi === wifiFilter);
+                            (!wifiFilter || product.WiFi === wifiFilter) &&
+                            (!boilerTypeFilter || product.Тип_котла === boilerTypeFilter);
                     } else if (currentCategory === 'water_heater') {
                         const volumeFilter = document.getElementById('volume-filter')?.value || '';
                         matchesDynamic = matchesDynamic && (!volumeFilter || product.Объем === volumeFilter);
@@ -753,24 +775,23 @@
                             (!diameterFilter || product.Диаметр === diameterFilter) &&
                             (!chimneyTypeFilter || product.Тип_дымохода === chimneyTypeFilter);
                     }
-                    const stockFilter = document.getElementById('stock-filter')?.value || '';
-                    const matchesStock = !stockFilter || 
-                        (stockFilter === 'В наличии' && product.В_наличии > 0) ||
-                        (stockFilter === 'Под заказ' && product.В_наличии === 0);
-                    return matchesCategory && matchesDynamic && matchesStock;
+                    // const stockFilter = document.getElementById('stock-filter')?.value || '';
+                    // const matchesStock = !stockFilter || 
+                    //     (stockFilter === 'В наличии' && product.В_наличии > 0) ||
+                    //     (stockFilter === 'Под заказ' && product.В_наличии === 0);
+                    // return matchesCategory && matchesDynamic && matchesStock;
+                    return matchesCategory && matchesDynamic;
                 });
             }
             currentPage = 1;
             sortProducts();
         }
-
         function handleSearch() {
             clearTimeout(window.searchTimeout);
             window.searchTimeout = setTimeout(() => {
                 filterProducts();
             }, 300);
         }
-
         function sortProducts() {
             const sortOption = document.getElementById('sort-select').value;
             filteredProducts.sort((a, b) => {
@@ -785,12 +806,10 @@
             });
             renderProducts();
         }
-
         function toggleVatDisplay() {
             showPricesWithoutVAT = document.getElementById('show-vat-toggle').checked;
             renderProducts();
         }
-
         function formatPrice(price, hasDiscount, originalPrice) {
             if (showPricesWithoutVAT) {
                 const priceWithoutVAT = Math.round(price / 1.2);
@@ -814,14 +833,22 @@
                 }
             }
         }
-
         function validateQuantityInput(input) {
             let value = parseInt(input.value) || 1;
             value = Math.max(1, value);
             input.value = value;
             return value;
         }
-
+        // Функция для создания ссылки для WhatsApp
+        function getWhatsAppShareLink(product) {
+            const text = `Посмотрите на этот котел: ${product.Модель}\nЦена: ${product.Цена.toLocaleString('ru-RU')} руб.\nАртикул: ${product.Артикул}`;
+            return `https://wa.me/?text=${encodeURIComponent(text)}`;
+        }
+        // Функция для создания ссылки для Telegram
+        function getTelegramShareLink(product) {
+            const text = `Посмотрите на этот котел: ${product.Модель}\nЦена: ${product.Цена.toLocaleString('ru-RU')} руб.\nАртикул: ${product.Артикул}`;
+            return `https://t.me/share/url?url=&text=${encodeURIComponent(text)}`;
+        }
         function renderProducts() {
             const container = document.getElementById('products-container');
             const productsToShow = filteredProducts.slice(0, productsPerPage);
@@ -850,6 +877,8 @@
                                 '<span class="badge bg-danger">Двухконтурный</span>' : 
                                 '<span class="badge bg-secondary">Одноконтурный</span>'}
                             ${product.WiFi === 'Да' ? '<span class="badge bg-success">Wi-Fi</span>' : ''}
+                            ${product.Тип_котла ? `<span class="badge bg-info">${product.Тип_котла}</span>` : ''}
+                            ${product.Исполнение ? `<span class="badge bg-warning">${product.Исполнение}</span>` : ''}
                         </div>
                     `;
                 } else if (product.type === 'water_heater') {
@@ -863,6 +892,20 @@
                         <div class="mb-2">
                             <span class="badge bg-warning">${product.Диаметр}</span>
                             <span class="badge bg-primary">${product.Тип_дымохода}</span>
+                        </div>
+                    `;
+                }
+                // Создаем HTML для кнопок поделиться (только для котлов)
+                let shareButtonsHtml = '';
+                if (product.type === 'boiler') {
+                    shareButtonsHtml = `
+                        <div class="share-buttons">
+                            <a href="${getWhatsAppShareLink(product)}" target="_blank" class="share-btn whatsapp">
+                                <i class="bi bi-whatsapp"></i>
+                            </a>
+                            <a href="${getTelegramShareLink(product)}" target="_blank" class="share-btn telegram">
+                                <i class="bi bi-telegram"></i>
+                            </a>
                         </div>
                     `;
                 }
@@ -880,6 +923,7 @@
                                     ${formatPrice(finalPrice, hasDiscount, originalPrice)}
                                     ${hasDiscount ? `<small class="text-success">Экономия ${currentDiscount}%</small>` : ''}
                                 </div>
+                                ${shareButtonsHtml}
                                 <div class="card-footer-section">
                                     <div class="stock-status ${product.В_наличии > 0 ? 'in-stock' : 'out-of-stock'}">
                                         <i class="bi ${product.В_наличии > 0 ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
@@ -912,7 +956,6 @@
             }).join('');
             updateStatistics();
         }
-
         function addToCompare(article) {
             const product = allProducts.find(p => p.Артикул === article);
             if (!product || product.type !== 'boiler') return;
@@ -932,16 +975,13 @@
             saveToLocalStorage();
             renderProducts();
         }
-
         function updateCompareBadge() {
             document.getElementById('compare-badge').textContent = compareList.length;
         }
-
         function saveToLocalStorage() {
             localStorage.setItem('cart', JSON.stringify(cart));
             localStorage.setItem('compareList', JSON.stringify(compareList));
         }
-
         function addToCart(article) {
             const product = allProducts.find(p => p.Артикул === article);
             if (!product) return;
@@ -962,7 +1002,6 @@
             renderProducts();
             showNotification(`Товар добавлен в корзину (${quantity} шт.)`, 'success');
         }
-
         function updateCartItem(article, quantity) {
             const item = cart.find(item => item.Артикул === article);
             if (item) {
@@ -972,7 +1011,6 @@
                 saveToLocalStorage();
             }
         }
-
         function removeFromCart(article) {
             cart = cart.filter(item => item.Артикул !== article);
             updateCartBadge();
@@ -980,12 +1018,10 @@
             saveToLocalStorage();
             renderProducts();
         }
-
         function updateCartBadge() {
             const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
             document.getElementById('cart-badge').textContent = totalItems;
         }
-
         function updateCart() {
             const container = document.getElementById('cart-items-container');
             const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -1043,7 +1079,6 @@
                 </div>
             `).join('');
         }
-
         function sendRequest(type) {
             if (cart.length === 0) {
                 showNotification('Корзина пуста', 'warning');
@@ -1052,20 +1087,31 @@
             const subject = type === 'invoice' ? 'Запрос счета на оплату' : 'Запрос коммерческого предложения';
             let body = '';
             if (type === 'invoice') {
-                body = `Здравствуйте!\n\nПрошу выставить счет на оплату по следующим позициям:\n\n`;
+                body = `Здравствуйте!
+        Прошу подготовить коммерческое предложение на следующие товары:
+        `;
             } else {
-                body = `Здравствуйте!\n\nПрошу подготовить коммерческое предложение на следующие товары:\n\n`;
+                body = `Здравствуйте!
+        Прошу подготовить коммерческое предложение на следующие товары:
+        `;
             }
             body += cart.map(item => 
                 `${item.Модель} (Артикул: ${item.Артикул}) - ${item.quantity} шт. x ${item.discountPrice} руб. = ${(item.discountPrice * item.quantity).toLocaleString('ru-RU')} руб.`
-            ).join('\n') + `\n\nОбщая сумма: ${document.getElementById('cart-final-price').textContent}\nПримененная скидка: ${currentDiscount}%\nДля оформления документов, пожалуйста, укажите:\n- Название вашей компании:\n- ИНН:\nКонтактные данные для связи: [Ваши контактные данные]\nЗаранее благодарю!`;
-
+            ).join(`
+        `);
+            body += `
+        Общая сумма: ${document.getElementById('cart-final-price').textContent}
+        Примененная скидка: ${currentDiscount}%
+        Для оформления документов, пожалуйста, укажите:
+        - Название вашей компании:
+        - ИНН:
+        Контактные данные для связи: [Ваши контактные данные]
+        Заранее благодарю!`;
             const encodedBody = encodeURIComponent(body.replace(/\n/g, '%0A'));
             const mailtoLink = `mailto:mt@laggartt.ru?subject=${encodeURIComponent(subject)}&body=${encodedBody}`;
             window.open(mailtoLink, '_blank');
         }
-
-        function showNotification(message, type = 'info') {
+                function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
             notification.className = `alert alert-${type} position-fixed`;
             notification.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
@@ -1082,18 +1128,15 @@
                 }
             }, 3000);
         }
-
         function showCatalog() {
             document.getElementById('catalog-section').classList.remove('hidden-section');
             document.getElementById('cart-section').classList.add('hidden-section');
         }
-
         function showCart() {
             document.getElementById('catalog-section').classList.add('hidden-section');
             document.getElementById('cart-section').classList.remove('hidden-section');
             updateCart();
         }
-
         function showCompare() {
             if (compareList.length === 0) {
                 showNotification('Нечего сравнивать', 'info');
@@ -1101,7 +1144,6 @@
             }
             window.open('compare.html', '_blank');
         }
-
         // Функция переключения аккордеона
         function toggleAccordion() {
             const body = document.getElementById('dynamic-filter-body');
@@ -1115,7 +1157,6 @@
                 icon.classList.add('bi-chevron-down');
             }
         }
-
         // Инициализация после загрузки DOM
         document.addEventListener('DOMContentLoaded', function() {
             loadData(); // Это вызовет filterProducts → renderProducts
