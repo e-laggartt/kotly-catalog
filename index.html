@@ -323,17 +323,21 @@
                 font-size: 0.9rem;
                 -webkit-line-clamp: 2;
             }
-            /* Аккордеон фильтров всегда виден на мобильных */
-            .accordion-section {
-                padding: 16px;
+            /* Кнопка аккордеона видна на мобильных */
+            .accordion-button {
+                display: block;
             }
+            /* Фильтры не отображаются по умолчанию на мобильных */
             .accordion-body {
-                max-height: none;
+                max-height: 0;
+                opacity: 0;
+            }
+            .accordion-body.show {
+                max-height: 500px;
                 opacity: 1;
             }
-            /* Убираем кнопку аккордеона на мобильных, так как он всегда открыт */
-            .accordion-button {
-                display: none;
+            .accordion-button .bi-chevron-up {
+                transform: rotate(180deg);
             }
             .card-body {
                 padding: 12px;
@@ -533,7 +537,10 @@
                 </div>
                 <!-- Динамические фильтры -->
                 <div class="accordion-section" id="dynamic-filter-section">
-                    <!-- Кнопка аккордеона убрана для десктопов и всегда открыта на мобильных -->
+                    <div class="accordion-button" onclick="toggleAccordion()">
+                        <span>Фильтры</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
                     <div class="accordion-body" id="dynamic-filter-body">
                         <div class="row g-3" id="filters-container">
                             <!-- Фильтры появятся здесь -->
@@ -1188,6 +1195,19 @@
                 return;
             }
             window.open('compare.html', '_blank');
+        }
+        // Функция переключения аккордеона
+        function toggleAccordion() {
+            const body = document.getElementById('dynamic-filter-body');
+            const icon = document.querySelector('.accordion-button .bi');
+            body.classList.toggle('show');
+            if (body.classList.contains('show')) {
+                icon.classList.remove('bi-chevron-down');
+                icon.classList.add('bi-chevron-up');
+            } else {
+                icon.classList.remove('bi-chevron-up');
+                icon.classList.add('bi-chevron-down');
+            }
         }
         // Инициализация после загрузки DOM
         document.addEventListener('DOMContentLoaded', function() {
