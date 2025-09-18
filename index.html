@@ -70,6 +70,13 @@
             right: -8px;
             top: -5px;
         }
+        /* Исправление для мобильных: горизонтальное расположение иконок */
+        .navbar-nav {
+            flex-direction: row !important;
+        }
+        .navbar-nav .nav-item {
+            margin-left: 0.5rem;
+        }
         .card {
             background: var(--card-bg);
             border: none;
@@ -316,19 +323,17 @@
                 font-size: 0.9rem;
                 -webkit-line-clamp: 2;
             }
+            /* Аккордеон фильтров всегда виден на мобильных */
             .accordion-section {
                 padding: 16px;
             }
             .accordion-body {
-                max-height: 0;
-                opacity: 0;
-            }
-            .accordion-body.show {
-                max-height: 500px;
+                max-height: none;
                 opacity: 1;
             }
-            .accordion-button .bi-chevron-up {
-                transform: rotate(180deg);
+            /* Убираем кнопку аккордеона на мобильных, так как он всегда открыт */
+            .accordion-button {
+                display: none;
             }
             .card-body {
                 padding: 12px;
@@ -528,6 +533,7 @@
                 </div>
                 <!-- Динамические фильтры -->
                 <div class="accordion-section" id="dynamic-filter-section">
+                    <!-- Кнопка аккордеона убрана для десктопов и всегда открыта на мобильных -->
                     <div class="accordion-body" id="dynamic-filter-body">
                         <div class="row g-3" id="filters-container">
                             <!-- Фильтры появятся здесь -->
@@ -841,12 +847,64 @@
         }
         // Функция для создания ссылки для WhatsApp
         function getWhatsAppShareLink(product) {
-            const text = `Посмотрите на этот котел: ${product.Модель}\nЦена: ${product.Цена.toLocaleString('ru-RU')} руб.\nАртикул: ${product.Артикул}`;
+            const originalPrice = product.Цена;
+            const finalPrice = calculateDiscountPrice(originalPrice, currentDiscount);
+            const hasDiscount = currentDiscount > 0;
+            
+            let text = `Посмотрите на этот котел: ${product.Модель}\n`;
+            text += `Артикул: ${product.Артикул}\n`;
+            
+            if (product.Мощность && product.Мощность !== "Не указана") {
+                text += `Мощность: ${product.Мощность} кВт\n`;
+            }
+            if (product.Контуры) {
+                text += `Контуры: ${product.Контуры}\n`;
+            }
+            if (product.Тип_котла) {
+                text += `Тип котла: ${product.Тип_котла}\n`;
+            }
+            if (product.WiFi) {
+                text += `Wi-Fi: ${product.WiFi}\n`;
+            }
+            
+            if (hasDiscount) {
+                text += `Цена без скидки: ${originalPrice.toLocaleString('ru-RU')} руб.\n`;
+                text += `Цена со скидкой (${currentDiscount}%): ${finalPrice.toLocaleString('ru-RU')} руб.`;
+            } else {
+                text += `Цена: ${originalPrice.toLocaleString('ru-RU')} руб.`;
+            }
+            
             return `https://wa.me/?text=${encodeURIComponent(text)}`;
         }
         // Функция для создания ссылки для Telegram
         function getTelegramShareLink(product) {
-            const text = `Посмотрите на этот котел: ${product.Модель}\nЦена: ${product.Цена.toLocaleString('ru-RU')} руб.\nАртикул: ${product.Артикул}`;
+            const originalPrice = product.Цена;
+            const finalPrice = calculateDiscountPrice(originalPrice, currentDiscount);
+            const hasDiscount = currentDiscount > 0;
+            
+            let text = `Посмотрите на этот котел: ${product.Модель}\n`;
+            text += `Артикул: ${product.Артикул}\n`;
+            
+            if (product.Мощность && product.Мощность !== "Не указана") {
+                text += `Мощность: ${product.Мощность} кВт\n`;
+            }
+            if (product.Контуры) {
+                text += `Контуры: ${product.Контуры}\n`;
+            }
+            if (product.Тип_котла) {
+                text += `Тип котла: ${product.Тип_котла}\n`;
+            }
+            if (product.WiFi) {
+                text += `Wi-Fi: ${product.WiFi}\n`;
+            }
+            
+            if (hasDiscount) {
+                text += `Цена без скидки: ${originalPrice.toLocaleString('ru-RU')} руб.\n`;
+                text += `Цена со скидкой (${currentDiscount}%): ${finalPrice.toLocaleString('ru-RU')} руб.`;
+            } else {
+                text += `Цена: ${originalPrice.toLocaleString('ru-RU')} руб.`;
+            }
+            
             return `https://t.me/share/url?url=&text=${encodeURIComponent(text)}`;
         }
         function renderProducts() {
@@ -1087,31 +1145,18 @@
             const subject = type === 'invoice' ? 'Запрос счета на оплату' : 'Запрос коммерческого предложения';
             let body = '';
             if (type === 'invoice') {
-                body = `Здравствуйте!
-        Прошу подготовить коммерческое предложение на следующие товары:
-        `;
+                body = `Здравствуйте!\nПрошу выставить счет на оплату по следующим позициям:\n`;
             } else {
-                body = `Здравствуйте!
-        Прошу подготовить коммерческое предложение на следующие товары:
-        `;
+                body = `Здравствуйте!\nПрошу подготовить коммерческое предложение на следующие товары:\n`;
             }
             body += cart.map(item => 
                 `${item.Модель} (Артикул: ${item.Артикул}) - ${item.quantity} шт. x ${item.discountPrice} руб. = ${(item.discountPrice * item.quantity).toLocaleString('ru-RU')} руб.`
-            ).join(`
-        `);
-            body += `
-        Общая сумма: ${document.getElementById('cart-final-price').textContent}
-        Примененная скидка: ${currentDiscount}%
-        Для оформления документов, пожалуйста, укажите:
-        - Название вашей компании:
-        - ИНН:
-        Контактные данные для связи: [Ваши контактные данные]
-        Заранее благодарю!`;
-            const encodedBody = encodeURIComponent(body.replace(/\n/g, '%0A'));
+            ).join('\n') + `\n\nОбщая сумма: ${document.getElementById('cart-final-price').textContent}\nПримененная скидка: ${currentDiscount}%\n\nДля оформления документов, пожалуйста, укажите:\n- Название вашей компании:\n- ИНН:\nКонтактные данные для связи: [Ваши контактные данные]\nЗаранее благодарю!`;
+            const encodedBody = encodeURIComponent(body);
             const mailtoLink = `mailto:mt@laggartt.ru?subject=${encodeURIComponent(subject)}&body=${encodedBody}`;
             window.open(mailtoLink, '_blank');
         }
-                function showNotification(message, type = 'info') {
+        function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
             notification.className = `alert alert-${type} position-fixed`;
             notification.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
@@ -1143,19 +1188,6 @@
                 return;
             }
             window.open('compare.html', '_blank');
-        }
-        // Функция переключения аккордеона
-        function toggleAccordion() {
-            const body = document.getElementById('dynamic-filter-body');
-            const icon = document.querySelector('.accordion-button .bi');
-            body.classList.toggle('show');
-            if (body.classList.contains('show')) {
-                icon.classList.remove('bi-chevron-down');
-                icon.classList.add('bi-chevron-up');
-            } else {
-                icon.classList.remove('bi-chevron-up');
-                icon.classList.add('bi-chevron-down');
-            }
         }
         // Инициализация после загрузки DOM
         document.addEventListener('DOMContentLoaded', function() {
