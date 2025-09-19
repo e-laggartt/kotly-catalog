@@ -321,6 +321,8 @@ def main():
                     return 'images/meteor-q3.jpg'
                 elif 'METEOR M30' in model:
                     return 'images/meteor-m30.jpg'
+                elif 'METEOR B23' in model:
+                    return 'images/meteor-b23.jpg' 
                 elif 'METEOR M6' in model:
                     return 'images/meteor-m6.jpg'
                 elif 'LAGGARTT' in model or 'ГАЗ 6000' in model:
