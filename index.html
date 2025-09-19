@@ -481,9 +481,46 @@
         .whatsapp { background-color: #25D366; }
         .telegram { background-color: #0088cc; }
         /* КОНЕЦ ИЗМЕНЕНИЙ */
+        
+        /* Стили для уведомления о новых поступлениях */
+        #new-arrivals-banner {
+            background-color: #e6f4ea; /* Светло-зеленый фон */
+            border-left: 5px solid #10b981; /* Зеленая левая граница */
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+            display: none; /* Скрыто по умолчанию */
+        }
+        #new-arrivals-banner.show {
+            display: block;
+        }
+        #new-arrivals-banner .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            float: right;
+            margin-top: -5px;
+        }
+        #new-arrivals-banner ul {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+        #new-arrivals-banner li {
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
+    <!-- Уведомление о новых поступлениях -->
+    <div id="new-arrivals-banner" class="container">
+        <button class="close-btn" onclick="closeNewArrivalsBanner()">&times;</button>
+        <h5><i class="bi bi-box-seam"></i> Новые поступления!</h5>
+        <p>Следующие товары снова появились в наличии:</p>
+        <ul id="new-arrivals-list"></ul>
+        <button class="btn btn-sm btn-success" onclick="closeNewArrivalsBanner()">Понятно</button>
+    </div>
+
     <!-- Навигация -->
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
@@ -661,6 +698,126 @@
         let showPricesWithoutVAT = false;
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
         let compareList = JSON.parse(localStorage.getItem('compareList')) || [];
+        
+        // --- НАЧАЛО НОВОГО КОДА ДЛЯ УВЕДОМЛЕНИЙ О ПОСТУПЛЕНИИ ---
+        // Ключ для хранения состояния склада в localStorage
+        const STOCK_STATE_KEY = 'previousStockState';
+        // Ключ для хранения времени последнего уведомления, чтобы не показывать слишком часто
+        const NOTIFICATION_TIME_KEY = 'lastNewArrivalNotificationTime';
+        // Интервал между уведомлениями (например, 1 день = 86400000 мс)
+        const NOTIFICATION_INTERVAL_MS = 0; // Установите 0, чтобы показывать всегда при наличии новых. Или 86400000 для одного раза в день.
+
+        /**
+         * Сохраняет текущее состояние наличия товаров в localStorage.
+         * @param {Array} products - Массив объектов товаров.
+         */
+        function saveCurrentStockState(products) {
+            try {
+                const stockState = {};
+                products.forEach(product => {
+                    // Сохраняем артикул и количество в наличии
+                    stockState[product.Артикул] = product.В_наличии || 0;
+                });
+                localStorage.setItem(STOCK_STATE_KEY, JSON.stringify(stockState));
+                console.log('Текущее состояние склада сохранено.');
+            } catch (e) {
+                console.error('Ошибка при сохранении состояния склада:', e);
+            }
+        }
+
+        /**
+         * Проверяет, появились ли новые товары в наличии по сравнению с прошлым разом.
+         * @param {Array} currentProducts - Массив текущих объектов товаров.
+         */
+        function checkForNewArrivals(currentProducts) {
+            try {
+                // Проверяем, нужно ли показывать уведомление по времени
+                const lastNotificationTime = parseInt(localStorage.getItem(NOTIFICATION_TIME_KEY) || '0', 10);
+                const currentTime = new Date().getTime();
+                if (NOTIFICATION_INTERVAL_MS > 0 && (currentTime - lastNotificationTime) < NOTIFICATION_INTERVAL_MS) {
+                    console.log('Уведомление о новых поступлениях показывалось недавно. Пропускаем.');
+                    return; // Не показываем, если интервал ещё не прошёл
+                }
+
+                // 1. Загружаем предыдущее состояние
+                const previousStockStateString = localStorage.getItem(STOCK_STATE_KEY);
+                let previousStockState = {};
+                if (previousStockStateString) {
+                    previousStockState = JSON.parse(previousStockStateString);
+                }
+
+                // 2. Сравниваем и находим новые поступления
+                const newArrivals = [];
+                currentProducts.forEach(product => {
+                    const article = product.Артикул;
+                    const currentStock = product.В_наличии || 0;
+                    const previousStock = previousStockState[article] || 0;
+
+                    // Товар считается новым поступлением, если:
+                    // 1. Сейчас он есть в наличии (currentStock > 0)
+                    // 2. Ранее его не было ИЛИ его количество было 0 (previousStock <= 0)
+                    if (currentStock > 0 && previousStock <= 0) {
+                        newArrivals.push(product);
+                    }
+                });
+
+                // 3. Отображаем уведомление, если есть новые поступления
+                if (newArrivals.length > 0) {
+                    showNewArrivalsNotification(newArrivals);
+                    // Обновляем время последнего уведомления
+                    localStorage.setItem(NOTIFICATION_TIME_KEY, currentTime.toString());
+                } else {
+                    console.log('Новых поступлений по сравнению с прошлым сеансом не обнаружено.');
+                }
+
+                // 4. Сохраняем текущее состояние как новое "предыдущее"
+                saveCurrentStockState(currentProducts);
+
+            } catch (e) {
+                console.error('Ошибка при проверке новых поступлений:', e);
+            }
+        }
+
+        /**
+         * Отображает уведомление о новых поступлениях.
+         * @param {Array} newArrivals - Массив объектов новых товаров.
+         */
+        function showNewArrivalsNotification(newArrivals) {
+            if (newArrivals.length === 0) return;
+
+            const banner = document.getElementById('new-arrivals-banner');
+            const list = document.getElementById('new-arrivals-list');
+            
+            // Очищаем список
+            list.innerHTML = '';
+            
+            // Добавляем товары в список
+            newArrivals.slice(0, 5).forEach(product => { // Показываем максимум 5 товаров
+                const li = document.createElement('li');
+                li.textContent = `${product.Модель} (${product.В_наличии} шт.)`;
+                list.appendChild(li);
+            });
+            
+            // Если товаров больше 5, добавляем запись об этом
+            if (newArrivals.length > 5) {
+                const li = document.createElement('li');
+                li.textContent = `... и ещё ${newArrivals.length - 5} товаров.`;
+                list.appendChild(li);
+            }
+            
+            // Показываем баннер
+            banner.classList.add('show');
+        }
+        
+        /**
+         * Закрывает баннер с уведомлением о новых поступлениях.
+         */
+        function closeNewArrivalsBanner() {
+            const banner = document.getElementById('new-arrivals-banner');
+            banner.classList.remove('show');
+        }
+        // --- КОНЕЦ НОВОГО КОДА ДЛЯ УВЕДОМЛЕНИЙ О ПОСТУПЛЕНИИ ---
+
         async function loadData() {
             try {
                 showLoading(true);
@@ -671,6 +828,14 @@
                 showLoading(false);
                 updateCartBadge();
                 updateCompareBadge();
+
+                // --- НАЧАЛО ИНТЕГРАЦИИ ---
+                // Проверяем новые поступления после загрузки и начальной отрисовки
+                setTimeout(() => {
+                     checkForNewArrivals(allProducts);
+                }, 1000); // Небольшая задержка, чтобы основная отрисовка точно завершилась
+                // --- КОНЕЦ ИНТЕГРАЦИИ ---
+
             } catch (error) {
                 console.error('Ошибка загрузки данных:', error);
                 showLoading(false);
