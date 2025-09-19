@@ -41,8 +41,11 @@ def main():
         # Находим колонки в остатках
         article_col_stock = find_column(stock_df, ['артикул', 'article', 'код', 'articul', 'sku'])
         stock_col = find_column(stock_df, ['в наличии', 'остаток', 'количество', 'quantity', 'stock', 'наличие', 'кол-во'])
+        # НАЧАЛО ИЗМЕНЕНИЙ: Поиск колонки "Ожидается"
+        expected_col = find_column(stock_df, ['ожидается', 'expected', 'ожидаются'])
+        # КОНЕЦ ИЗМЕНЕНИЙ
         
-        print(f"Найдены колонки в остатках: Артикул='{article_col_stock}', Наличие='{stock_col}'")
+        print(f"Найдены колонки в остатках: Артикул='{article_col_stock}', Наличие='{stock_col}', Ожидается='{expected_col}'")
         
         if not all([article_col_price, name_col, price_col, article_col_stock, stock_col]):
             raise ValueError("Не найдены все необходимые колонки в таблицах")
@@ -51,8 +54,16 @@ def main():
         price_clean = price_df[[article_col_price, name_col, price_col]].copy()
         price_clean.columns = ['Артикул', 'Модель', 'Цена']
         
-        stock_clean = stock_df[[article_col_stock, stock_col]].copy()
-        stock_clean.columns = ['Артикул', 'В_наличии']
+        # НАЧАЛО ИЗМЕНЕНИЙ: Включаем колонку "Ожидается" в stock_clean, если она найдена
+        if expected_col:
+            stock_clean = stock_df[[article_col_stock, stock_col, expected_col]].copy()
+            stock_clean.columns = ['Артикул', 'В_наличии', 'Ожидается']
+        else:
+            stock_clean = stock_df[[article_col_stock, stock_col]].copy()
+            stock_clean.columns = ['Артикул', 'В_наличии']
+            # Если колонка не найдена, добавляем её со значением 0 по умолчанию
+            stock_clean['Ожидается'] = 0
+        # КОНЕЦ ИЗМЕНЕНИЙ
         
         # Очистка данных
         price_clean = price_clean.dropna(subset=['Артикул'])
@@ -86,10 +97,16 @@ def main():
                 return 0
         
         stock_clean['В_наличии'] = stock_clean['В_наличии'].apply(parse_quantity)
+        # НАЧАЛО ИЗМЕНЕНИЙ: Обработка колонки "Ожидается"
+        stock_clean['Ожидается'] = stock_clean['Ожидается'].apply(parse_quantity)
+        # КОНЕЦ ИЗМЕНЕНИЙ
         
         # Объединяем данные
         merged_df = pd.merge(price_clean, stock_clean, on='Артикул', how='left')
         merged_df['В_наличии'] = merged_df['В_наличии'].fillna(0).astype(int)
+        # НАЧАЛО ИЗМЕНЕНИЙ: Заполнение пропусков в "Ожидается"
+        merged_df['Ожидается'] = merged_df['Ожидается'].fillna(0).astype(int)
+        # КОНЕЦ ИЗМЕНЕНИЙ
         
         # Функция для определения типа товара
         def determine_type(model_name):
@@ -184,12 +201,10 @@ def main():
                             wifi = rule["wifi"]
                             boiler_type = rule["boiler_type"]
                             execution = rule["execution"]
-                            # Возвращаем сразу, так как все значения установлены
+                            # Возвращаем только фото, так как другие поля уже установлены
                             return pd.Series([power, contours, wifi, volume, diameter, chimney_type, boiler_type, execution])
-                        # Если артикул не найден в правилах, продолжаем обработку как обычного котла
                 
                 # --- ОПРЕДЕЛЕНИЕ ХАРАКТЕРИСТИК ДЛЯ ОСТАЛЬНЫХ КОТЛОВ ---
-                
                 # 1. Определяем тип котла (если не установлен через Devotion)
                 if not boiler_type: # Если еще не определен
                      if "DEVOTION" in model:
@@ -345,7 +360,8 @@ def main():
         merged_df['Фото'] = merged_df.apply(get_image_for_model, axis=1)
         
         # Добавляем статус
-        merged_df['Статус'] = merged_df['В_наличии'].apply(lambda x: 'В наличии' if x > 0 else 'Нет в наличии')
+        # merged_df['Статус'] = merged_df['В_наличии'].apply(lambda x: 'В наличии' if x > 0 else 'Нет в наличии')
+        # Статус теперь будет формироваться динамически в JS
         
         # Подготавливаем итоговый список для JSON
         result = []
@@ -355,9 +371,12 @@ def main():
                 "Модель": row["Модель"],
                 "Цена": row["Цена"],
                 "В_наличии": row["В_наличии"],
-                "Статус": row["Статус"],
+                # "Статус": row["Статус"], # Убираем, так как статус будет формироваться в JS
                 "Фото": row["Фото"],
-                "type": row["type"]
+                "type": row["type"],
+                # НАЧАЛО ИЗМЕНЕНИЙ: Добавляем поле "Ожидается"
+                "Ожидается": row["Ожидается"]
+                # КОНЕЦ ИЗМЕНЕНИЙ
             }
             
             # Добавляем характеристики в зависимости от типа
@@ -382,12 +401,15 @@ def main():
         
         print(f"✅ Готово! Обработано {len(result)} товаров")
         print(f"📊 В наличии: {sum(1 for x in result if x['В_наличии'] > 0)} товаров")
+        # НАЧАЛО ИЗМЕНЕНИЙ: Вывод информации об ожидаемых товарах
+        print(f"📦 Ожидается: {sum(1 for x in result if x['Ожидается'] > 0)} товаров")
+        # КОНЕЦ ИЗМЕНЕНИЙ
         
         # Покажем пример данных
         print("\nПример данных (первые 3 товара):")
         for i, item in enumerate(result[:3]):
             print(f"{i+1}. {item['Артикул']} - {item['Модель'][:50]}...")
-            print(f"   Тип: {item['type']}, Цена: {item['Цена']} руб., Наличие: {item['В_наличии']} шт.")
+            print(f"   Тип: {item['type']}, Цена: {item['Цена']} руб., Наличие: {item['В_наличии']} шт., Ожидается: {item['Ожидается']}")
             if item['type'] == 'boiler':
                 print(f"   Контуры: {item.get('Контуры', '')}, Мощность: {item.get('Мощность', '')} кВт, Wi-Fi: {item.get('WiFi', '')}")
                 print(f"   Тип: {item.get('Тип_котла', '')}, Исполнение: {item.get('Исполнение', '')}")

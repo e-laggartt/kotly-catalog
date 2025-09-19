@@ -123,11 +123,13 @@
         }
         .badge {
             font-weight: 500;
-            padding: 5px 8px;
+            padding: 5px 10px; /* Увеличенный padding для ширины */
             border-radius: 16px;
             margin-right: 4px;
             margin-bottom: 6px;
             font-size: 0.7rem;
+            text-align: center; /* Текст внутри бейджа по центру */
+            display: inline-block; /* Это позволяет бейджу занимать только нужную ширину */
         }
         .badge.bg-primary { background: var(--gradient-primary) !important; }
         .badge.bg-secondary { background: var(--secondary) !important; }
@@ -135,6 +137,14 @@
         .badge.bg-danger { background: var(--gradient-danger) !important; }
         .badge.bg-warning { background: var(--gradient-accent) !important; color: white !important; }
         .badge.bg-info { background: #0ea5e9 !important; color: white !important; }
+        
+        /* НАЧАЛО ИЗМЕНЕНИЙ: Стили для вертикального отображения характеристик */
+        .characteristics-container {
+            text-align: left; /* Выравнивание содержимого (бейджей) по левому краю */
+            margin-bottom: 12px;
+        }
+        /* КОНЕЦ ИЗМЕНЕНИЙ */
+
         .price-section {
             background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
             padding: 12px;
@@ -447,7 +457,7 @@
             align-items: center;
             gap: 10px;
         }
-        /* Стили для кнопок поделиться */
+        /* НАЧАЛО ИЗМЕНЕНИЙ: Стили для кнопок поделиться */
         .share-buttons {
             display: flex;
             gap: 8px;
@@ -470,6 +480,7 @@
         }
         .whatsapp { background-color: #25D366; }
         .telegram { background-color: #0088cc; }
+        /* КОНЕЦ ИЗМЕНЕНИЙ */
     </style>
 </head>
 <body>
@@ -852,26 +863,44 @@
             input.value = value;
             return value;
         }
+        // НАЧАЛО ИЗМЕНЕНИЙ: Функции для создания ссылок для WhatsApp и Telegram
         // Функция для создания ссылки для WhatsApp
         function getWhatsAppShareLink(product) {
             const originalPrice = product.Цена;
             const finalPrice = calculateDiscountPrice(originalPrice, currentDiscount);
             const hasDiscount = currentDiscount > 0;
             
-            let text = `Посмотрите на этот котел: ${product.Модель}\n`;
+            let text = `Посмотрите на этот товар: ${product.Модель}\n`;
             text += `Артикул: ${product.Артикул}\n`;
             
-            if (product.Мощность && product.Мощность !== "Не указана") {
-                text += `Мощность: ${product.Мощность} кВт\n`;
-            }
-            if (product.Контуры) {
-                text += `Контуры: ${product.Контуры}\n`;
-            }
-            if (product.Тип_котла) {
-                text += `Тип котла: ${product.Тип_котла}\n`;
-            }
-            if (product.WiFi) {
-                text += `Wi-Fi: ${product.WiFi}\n`;
+            // Добавляем характеристики в зависимости от типа товара
+            if (product.type === 'boiler') {
+                if (product.Мощность && product.Мощность !== "Не указана") {
+                    text += `Мощность: ${product.Мощность} кВт\n`;
+                }
+                if (product.Контуры) {
+                    text += `Контуры: ${product.Контуры}\n`;
+                }
+                if (product.WiFi) {
+                    text += `Wi-Fi: ${product.WiFi}\n`;
+                }
+                if (product.Тип_котла) {
+                    text += `Тип котла: ${product.Тип_котла}\n`;
+                }
+                if (product.Исполнение) {
+                    text += `Исполнение: ${product.Исполнение}\n`;
+                }
+            } else if (product.type === 'water_heater') {
+                if (product.Объем) {
+                    text += `Объем: ${product.Объем} л\n`;
+                }
+            } else if (product.type === 'chimney') {
+                if (product.Диаметр) {
+                    text += `Диаметр: ${product.Диаметр}\n`;
+                }
+                if (product.Тип_дымохода) {
+                    text += `Тип дымохода: ${product.Тип_дымохода}\n`;
+                }
             }
             
             if (hasDiscount) {
@@ -889,20 +918,37 @@
             const finalPrice = calculateDiscountPrice(originalPrice, currentDiscount);
             const hasDiscount = currentDiscount > 0;
             
-            let text = `Посмотрите на этот котел: ${product.Модель}\n`;
+            let text = `Посмотрите на этот товар: ${product.Модель}\n`;
             text += `Артикул: ${product.Артикул}\n`;
             
-            if (product.Мощность && product.Мощность !== "Не указана") {
-                text += `Мощность: ${product.Мощность} кВт\n`;
-            }
-            if (product.Контуры) {
-                text += `Контуры: ${product.Контуры}\n`;
-            }
-            if (product.Тип_котла) {
-                text += `Тип котла: ${product.Тип_котла}\n`;
-            }
-            if (product.WiFi) {
-                text += `Wi-Fi: ${product.WiFi}\n`;
+            // Добавляем характеристики в зависимости от типа товара
+            if (product.type === 'boiler') {
+                if (product.Мощность && product.Мощность !== "Не указана") {
+                    text += `Мощность: ${product.Мощность} кВт\n`;
+                }
+                if (product.Контуры) {
+                    text += `Контуры: ${product.Контуры}\n`;
+                }
+                if (product.WiFi) {
+                    text += `Wi-Fi: ${product.WiFi}\n`;
+                }
+                if (product.Тип_котла) {
+                    text += `Тип котла: ${product.Тип_котла}\n`;
+                }
+                if (product.Исполнение) {
+                    text += `Исполнение: ${product.Исполнение}\n`;
+                }
+            } else if (product.type === 'water_heater') {
+                if (product.Объем) {
+                    text += `Объем: ${product.Объем} л\n`;
+                }
+            } else if (product.type === 'chimney') {
+                if (product.Диаметр) {
+                    text += `Диаметр: ${product.Диаметр}\n`;
+                }
+                if (product.Тип_дымохода) {
+                    text += `Тип дымохода: ${product.Тип_дымохода}\n`;
+                }
             }
             
             if (hasDiscount) {
@@ -914,6 +960,65 @@
             
             return `https://t.me/share/url?url=&text=${encodeURIComponent(text)}`;
         }
+        // КОНЕЦ ИЗМЕНЕНИЙ
+
+        // НАЧАЛО ИЗМЕНЕНИЙ: Функция для рендеринга характеристик
+        function renderCharacteristics(product) {
+            let badges = [];
+            if (product.type === 'boiler') {
+                if (product.Мощность && product.Мощность !== "Не указана") {
+                    badges.push(`<span class="badge bg-primary">${product.Мощность} кВт</span>`);
+                }
+                if (product.Контуры) {
+                    if (product.Контуры === 'Двухконтурный') {
+                        badges.push(`<span class="badge bg-danger">Двухконтурный</span>`);
+                    } else if (product.Контуры === 'Одноконтурный') {
+                        badges.push(`<span class="badge bg-secondary">Одноконтурный</span>`);
+                    }
+                }
+                if (product.WiFi === 'Да') {
+                    badges.push(`<span class="badge bg-success">Wi-Fi</span>`);
+                }
+                if (product.Тип_котла) {
+                    if (product.Тип_котла === 'Конденсационный') {
+                        badges.push(`<span class="badge bg-info">Конденсационный</span>`);
+                    } else if (product.Тип_котла === 'Традиционный') {
+                        badges.push(`<span class="badge bg-warning">Традиционный</span>`);
+                    }
+                }
+                if (product.Исполнение) {
+                    if (product.Исполнение === 'Настенный') {
+                        badges.push(`<span class="badge bg-primary">Настенный</span>`);
+                    } else if (product.Исполнение === 'Напольный') {
+                        badges.push(`<span class="badge bg-secondary">Напольный</span>`);
+                    }
+                }
+            } else if (product.type === 'water_heater') {
+                if (product.Объем) {
+                    badges.push(`<span class="badge bg-info">${product.Объем} л</span>`);
+                }
+            } else if (product.type === 'chimney') {
+                if (product.Диаметр) {
+                    badges.push(`<span class="badge bg-warning">${product.Диаметр}</span>`);
+                }
+                if (product.Тип_дымохода) {
+                    if (product.Тип_дымохода === 'Конденсационный') {
+                        badges.push(`<span class="badge bg-info">Конденсационный</span>`);
+                    } else if (product.Тип_дымохода === 'Обычный') {
+                        badges.push(`<span class="badge bg-primary">Обычный</span>`);
+                    }
+                }
+            }
+            // Для accessory не добавляем специфических характеристик
+
+            if (badges.length > 0) {
+                // Возвращаем HTML с контейнером и бейджами, расположенными вертикально
+                return `<div class="characteristics-container">${badges.join('')}</div>`;
+            }
+            return ''; // Если нет характеристик, возвращаем пустую строку
+        }
+        // КОНЕЦ ИЗМЕНЕНИЙ
+
         function renderProducts() {
             const container = document.getElementById('products-container');
             const productsToShow = filteredProducts.slice(0, productsPerPage);
@@ -933,47 +1038,50 @@
                 const hasDiscount = currentDiscount > 0;
                 const inCart = cart.find(item => item.Артикул === product.Артикул);
                 const inCompare = compareList.some(item => item.Артикул === product.Артикул);
-                let characteristicsHtml = '';
-                if (product.type === 'boiler') {
-                    characteristicsHtml = `
-                        <div class="mb-2">
-                            <span class="badge bg-primary">${product.Мощность} кВт</span>
-                            ${product.Контуры === 'Двухконтурный' ? 
-                                '<span class="badge bg-danger">Двухконтурный</span>' : 
-                                '<span class="badge bg-secondary">Одноконтурный</span>'}
-                            ${product.WiFi === 'Да' ? '<span class="badge bg-success">Wi-Fi</span>' : ''}
-                            ${product.Тип_котла ? `<span class="badge bg-info">${product.Тип_котла}</span>` : ''}
-                            ${product.Исполнение ? `<span class="badge bg-warning">${product.Исполнение}</span>` : ''}
+                
+                // НАЧАЛО ИЗМЕНЕНИЙ: Используем новую функцию для рендеринга характеристик
+                let characteristicsHtml = renderCharacteristics(product);
+                // КОНЕЦ ИЗМЕНЕНИЙ
+
+                // НАЧАЛО ИЗМЕНЕНИЙ: Создаем HTML для кнопок поделиться для ВСЕХ типов товаров
+                let shareButtonsHtml = `
+                    <div class="share-buttons">
+                        <a href="${getWhatsAppShareLink(product)}" target="_blank" class="share-btn whatsapp">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                        <a href="${getTelegramShareLink(product)}" target="_blank" class="share-btn telegram">
+                            <i class="bi bi-telegram"></i>
+                        </a>
+                    </div>
+                `;
+                // КОНЕЦ ИЗМЕНЕНИЙ
+
+                // НАЧАЛО ИЗМЕНЕНИЙ: Формируем статус с учетом "Ожидается"
+                let stockStatusHtml = '';
+                if (product.В_наличии > 0) {
+                    stockStatusHtml = `
+                        <div class="stock-status in-stock">
+                            <i class="bi bi-check-circle-fill"></i>
+                            ${product.В_наличии} шт.
                         </div>
                     `;
-                } else if (product.type === 'water_heater') {
-                    characteristicsHtml = `
-                        <div class="mb-2">
-                            <span class="badge bg-info">${product.Объем} л</span>
+                } else if (product.Ожидается > 0) {
+                    stockStatusHtml = `
+                        <div class="stock-status out-of-stock">
+                            <i class="bi bi-clock-history"></i> <!-- Иконка часов для ожидания -->
+                            Ожидается ${product.Ожидается}
                         </div>
                     `;
-                } else if (product.type === 'chimney') {
-                    characteristicsHtml = `
-                        <div class="mb-2">
-                            <span class="badge bg-warning">${product.Диаметр}</span>
-                            <span class="badge bg-primary">${product.Тип_дымохода}</span>
+                } else {
+                    stockStatusHtml = `
+                        <div class="stock-status out-of-stock">
+                            <i class="bi bi-x-circle-fill"></i>
+                            Под заказ
                         </div>
                     `;
                 }
-                // Создаем HTML для кнопок поделиться (только для котлов)
-                let shareButtonsHtml = '';
-                if (product.type === 'boiler') {
-                    shareButtonsHtml = `
-                        <div class="share-buttons">
-                            <a href="${getWhatsAppShareLink(product)}" target="_blank" class="share-btn whatsapp">
-                                <i class="bi bi-whatsapp"></i>
-                            </a>
-                            <a href="${getTelegramShareLink(product)}" target="_blank" class="share-btn telegram">
-                                <i class="bi bi-telegram"></i>
-                            </a>
-                        </div>
-                    `;
-                }
+                // КОНЕЦ ИЗМЕНЕНИЙ
+
                 return `
                     <div class="col">
                         <div class="card h-100">
@@ -990,10 +1098,7 @@
                                 </div>
                                 ${shareButtonsHtml}
                                 <div class="card-footer-section">
-                                    <div class="stock-status ${product.В_наличии > 0 ? 'in-stock' : 'out-of-stock'}">
-                                        <i class="bi ${product.В_наличии > 0 ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
-                                        ${product.В_наличии > 0 ? `${product.В_наличии} шт.` : 'Под заказ'}
-                                    </div>
+                                    ${stockStatusHtml}
                                     <div class="d-flex flex-column">
                                         <button class="btn btn-sm btn-outline-secondary mb-1" 
                                                 onclick="addToCompare('${product.Артикул}')">
@@ -1159,7 +1264,7 @@
             body += cart.map(item => 
                 `${item.Модель} (Артикул: ${item.Артикул}) - ${item.quantity} шт. x ${item.discountPrice} руб. = ${(item.discountPrice * item.quantity).toLocaleString('ru-RU')} руб.`
             ).join('\n') + `\n\nОбщая сумма: ${document.getElementById('cart-final-price').textContent}\nПримененная скидка: ${currentDiscount}%\n\nДля оформления документов, пожалуйста, укажите:\n- Название вашей компании:\n- ИНН:\nКонтактные данные для связи: [Ваши контактные данные]\nЗаранее благодарю!`;
-            const encodedBody = encodeURIComponent(body);
+            const encodedBody = encodeURIComponent(body.replace(/\n/g, '%0A'));
             const mailtoLink = `mailto:mt@laggartt.ru?subject=${encodeURIComponent(subject)}&body=${encodedBody}`;
             window.open(mailtoLink, '_blank');
         }
