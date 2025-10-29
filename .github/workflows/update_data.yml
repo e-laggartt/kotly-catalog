@@ -10,13 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     
     permissions:
-      contents: write  # Добавьте это для разрешения записи
+      contents: write
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}  # Используем GITHUB_TOKEN вместо личного токена
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -42,6 +42,7 @@ jobs:
           echo "No changes to data.json"
         else
           git add data.json
-          git commit -m "Auto-update: данные обновлены из Google Таблиц [skip ci]"
+          git commit -m "Auto-update: данные обновлены из Google Таблиц"
           git push
+          echo "DATA_UPDATED=true" >> $GITHUB_ENV
         fi
